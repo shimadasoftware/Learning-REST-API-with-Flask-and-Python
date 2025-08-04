@@ -5,7 +5,7 @@ Los temas a ver son:
 - Conceptos
 - Arquitectura de Docker
 - Instalación de Docker
-- 
+- Primer ejercicio
 
 ## 1. Conceptos 🙋🏻‍♀️
 
@@ -548,3 +548,99 @@ Server: Docker Desktop 4.43.2 (199162)
 ```
 
 ![image](./img/9%20versions.png)
+
+
+## 4. Primer ejercicio 🙋🏻‍♀️
+
+La siguiente tabla contiene un listado de los comandos básicos necesarios para trabajar con Docker. 
+
+| Comando                                      | Descripción |
+|---------------------------------------------|-------------|
+| `docker --version`                          | Valida si Docker está instalado y muestra la versión. |
+| `docker container list`                     | Muestra la lista de contenedores en ejecución. |
+| `docker ps`                                 | Muestra la lista de todos los contenedores estén detenidos o en ejecución. |
+| `docker image list`                         | Muestra la lista de imágenes locales. |
+| `docker build -t <tag> --file <docker-file> .` | Construye una imagen tomando como base la ruta donde se esté ubicado y las instrucciones en el Dockerfile. El argumento `-t` etiqueta la imagen con un nombre específico. |
+| `docker run -d -p <host-port>:<container-port> <tag>` | Crea una instancia (contenedor) de una imagen almacenada localmente. Si la imagen no está localmente, se descarga desde un registro de contenedores (por defecto, Docker Hub).<br><br>El argumento `-d` ejecuta el contenedor en segundo plano (modo *detached*). Omitir este argumento mostrará el output en la terminal, pero bloqueará la sesión hasta que se detenga con `Ctrl+C`.<br><br>El argumento `-p` permite enlazar un puerto de la máquina anfitriona a uno del contenedor. |
+| `docker stop <container-id>`                | Detiene el contenedor identificado con el ID especificado. |
+
+
+## Hola mundo con Docker
+
+1. Ir a [link](https://hub.docker.com/_/httpd) y copiar el comando para descargar la imagen:
+
+```
+sudo docker pull httpd
+```
+
+![image](./img/10.png)
+
+2. Verificar qué imágenes existen actualmente.
+
+```
+sudo docker image ls
+```
+
+![image](./img/11.png)
+
+3. Ejecutar el contenedor. Para ello se le da la instrucción al Docker Daemon de ejecutar la imagen y crear el contenedor.
+
+El comando run crea un contenedor a partir de una imagen. El servidor de apache se ejecuta en el puerto 80 como indica la documentación:
+
+```
+
+sudo docker run -p 8080:80 httpd
+
+```
+
+![image](./img/14.png)
+
+![image](./img/13.png)
+
+No obstante, al terminar el proceso en terminal, el contenedor se detiene. Esto se debe a que se está ejecutando en primer plano.  
+
+* Si cierras la terminal o presionas Ctrl+C, el contenedor se detiene.
+
+* Si no interactúas con la terminal, Docker puede interpretar que el proceso terminó y cerrar el contenedor.
+
+![image](./img/15.png)
+
+El siguiente comando permite un servicio persistente:
+
+```
+
+sudo docker run -d -p 8080:80 --name mi-apache httpd
+
+```
+
+![image](./img/12.png)
+
+Qué hace:
+
+-d: Ejecuta el contenedor en segundo plano ("detached").
+
+--name: Asigna un nombre fijo (útil para gestionarlo después).
+
+![image](./img/13.png)
+
+Para detener el contenedor, se puede usar el comando mediante el nombre del contenedor:
+
+```
+
+sudo docker stop mi-apache
+
+```
+
+4. Realizar el ejercicio con [nginx](https://hub.docker.com/_/nginx).
+
+Si no está descargada la imagen con el comando pull, el comando run realiza la descarga de la imagen y la ejecución del contenedor.
+
+```
+
+sudo docker run -p 8080:80 nginx
+
+```
+
+![image](./img/16.png)
+
+![image](./img/17.png)
