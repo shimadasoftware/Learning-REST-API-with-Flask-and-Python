@@ -2,12 +2,16 @@
 
 Los temas a ver son:
 
+- Introducción a Docker
+- Instalación de Docker
+- Contenedores
+
+## 1. Introducción a Docker 🙋🏻‍♀️
+
 - Conceptos
 - Arquitectura de Docker
-- Instalación de Docker
-- Primer ejercicio
 
-## 1. Conceptos 🙋🏻‍♀️
+### **Sección 1: Conceptos**
 
 ### 1. Contenedores (Containers)
 
@@ -197,9 +201,7 @@ Resumen de Comandos Básicos
 | `docker build -t mi-app .`     | Construye una imagen desde un Dockerfile    |
 
 
----
-
-## 2. Arquitectura de Docker 🙋🏻‍♀️
+### **Sección 2: Arquitectura de Docker**
 
 ### ¿Qué es Docker Engine?
 
@@ -260,7 +262,7 @@ docker run → Docker Daemon → containerd → runC → Contenedor en ejecució
 
 ---
 
-## 3. Instalación de Docker 🙋🏻‍♀️
+## 2. Instalación de Docker 🙋🏻‍♀️
 
 A continuación se realiza la instalación de Docker en Linux con distribución de Fedora 42. 
 
@@ -549,8 +551,22 @@ Server: Docker Desktop 4.43.2 (199162)
 
 ![image](./img/9%20versions.png)
 
+---
 
-## 4. Primer ejercicio 🙋🏻‍♀️
+
+## 3. Contenedores 🙋🏻‍♀️
+
+### Temario: 
+
+- Comandos básicos
+- Modo iteractivo
+- Puertos
+- Logs
+- Variables de entorno
+- Contenedores sin servicio
+
+
+### Sección 1: Comandos básicos
 
 La siguiente tabla contiene un listado de los comandos básicos necesarios para trabajar con Docker. 
 
@@ -644,3 +660,166 @@ sudo docker run -p 8080:80 nginx
 ![image](./img/16.png)
 
 ![image](./img/17.png)
+
+5. Para verificar qué contenedores existen y están activos:
+
+```
+
+sudo docker container ls
+
+sudo docker container ls -a
+
+```
+
+Diferencias:
+
+* El primer comando solo lista los contenedores que están actualmente activos (status "Up").
+* El segundo comando lista todos los contenedores, incluyendo los detenidos (status "Exited").
+
+![image](./img/18.png)
+
+6. Para volver a iniciar el contenedor:
+
+```
+
+sudo docker start mi-apache
+
+```
+![image](./img/19.png)
+
+7. Para inspeccionar un contenedor se puede usar el ID o el nombre:
+
+```
+
+sudo docker container inspect 3019d4813cb9
+
+```
+
+![image](./img/20.png)
+
+8. Para eliminar los contenedores hay que tener presente que deben de estar detenidos.
+
+```
+
+sudo docker stop 3019d4813cb9
+sudo docker container rm 3019d4813cb9
+
+```
+
+![image](./img/21.png)
+
+
+9. Para remover todos los contenedores detenidos:
+
+```
+
+sudo docker container prune
+
+```
+
+![image](./img/22.png)
+
+
+### Sección 2: Modo iteractivo
+
+El modo interactivo permite acceder a la terminal del contenedor.
+
+```
+
+sudo docker exec 84f35778bfa4 ls
+sudo docker exec -it 84f35778bfa4 bash
+
+```
+
+![image](./img/23.png)
+
+
+![image](./img/24.png)
+
+
+### Sección 3: Puertos
+
+Como se vió anteriormente -p permite establecer el puerto.
+
+```
+
+sudo docker run -d -p 8080:80 --name mi-apache httpd
+
+```
+
+También, se puede usar -P para asignar un puerto aleatoriamente.
+
+```
+
+sudo docker run -d -P httpd
+sudo docker container port 0a836423c35a
+
+```
+
+![image](./img/25.png)
+
+![image](./img/26.png)
+
+
+### Sección 4: Logs
+
+Los logs permite hacer una trasavilidad de los errores o warnings del contenedor.
+
+![image](./img/27.png)
+
+```
+
+sudo docker logs 3b13bc012c47
+
+```
+
+![image](./img/28.png)
+
+Para que se actualice la terminal con los logs en tiempo real:
+
+```
+
+sudo docker logs -f 3b13bc012c47
+
+```
+
+![image](./img/29.png)
+
+
+### Sección 5: Variables de entorno
+
+![image](./img/30.png)
+
+```
+
+sudo docker run -d -p 3309:3306 -e MYSQL_ROOT_PASSWORD=mypass -e MYSQL_DATABASE=my_database mysql:oraclelinux9
+
+```
+
+![image](./img/31.png)
+
+### Sección 6: Contenedores sin servicio
+
+Por ejemplo, Ubuntu no tiene un puerto o servicio asignado. No obstante, al descargar la imagen y ejecutarla el contenedor no aparece con ps. 
+
+![image](./img/32.png)
+
+Tampoco aparece un error con logs.
+
+Por lo tanto, para permitir que se ejecute se utiliza -d -i -t o se puede unificar -dit:
+
+```
+
+sudo docker run -d -i -t ubuntu:rolling
+
+sudo docker run -dit ubuntu:rolling
+
+```
+
+![image](./img/35.png)
+
+![image](./img/33.png)
+
+![image](./img/34.png)
+
+
