@@ -5,6 +5,11 @@ Los temas a ver son:
 - Introducción a Docker
 - Instalación de Docker
 - Contenedores
+- Redes y Volúmenes
+- Imágenes
+- Docker Compose
+- Introducción a Kubernets
+- Extras
 
 ## 1. Introducción a Docker 🙋🏻‍♀️
 
@@ -822,4 +827,179 @@ sudo docker run -dit ubuntu:rolling
 
 ![image](./img/34.png)
 
+
+---
+
+
+## 4. Redes y Volúmenes 🙋🏻‍♀️
+
+- Qué son los Volúmenes
+- Vólumenes de Docker
+- Compartir Archivos entre Contenedores
+- Volúmenes Manuales
+- Redes
+- Conectando Contenedor a Red
+- Red Hosts
+
+
+### Sección 1: Qué son los Volúmenes
+
+Los vólumenes en Docker son espacios en el disco duro que permiten guardar y compartir archivos en el contenedor.
+
+Hay dos tipos de volúmenes:
+
+1. Administrados por el usuario: hay que pasar el path completo.
+2. Administrados por Docker.
+
+
+### Sección 2: Vólumenes de Docker
+
+```
+
+sudo docker
+
+```
+
+![image](./img/36.png)
+
+```
+
+sudo docker volume
+
+sudo docker volume ls
+
+```
+
+![image](./img/37.png)
+
+```
+
+sudo docker volume create docker-my-volume
+
+sudo docker volume inspect docker-my-volume
+
+```
+
+![image](./img/38.png)
+
+Para poder ejecutar el volumen y teniendo en cuenta la guía de Docker para MySQL:
+
+```
+
+$ docker run --name some-mysql -v /my/own/datadir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+
+```
+
+A continuación, se adapata el comando:
+
+```
+
+sudo docker run -d --name mysql-volume -v docker-my-volume:/var/lib/mysql -p 3311:3306 -e MYSQL_ROOT_PASSWORD=mypass mysql:oraclelinux9
+
+```
+
+![image](./img/39.png)
+
+Pero si se borrara el contenedor y no se estuviera utilizando los volúmenes se perdería toda la información. Por ejemplo, si anteriormente se hubiera creado una base de datos, se habría perdido. Sin embargo, al ultilizar volúmenes, la base de datos queda almacenada en el vólumen docker-my-volume en la ruta /var/lib/mysql.
+
+![image](./img/40.png)
+
+A continuación, se realiza un ejemplo con un archivo txt, para verificar que los volúmenes conservan la información:
+
+![image](./img/41.png)
+
+
+### Sección 3: Compartir Archivos entre Contenedores
+
+Los volúmenes permiten compartir archivos entre contenedores. Para ello se va a utilizar la imagen de Ubuntu y se guarda en docker-my-volume:
+
+```
+
+sudo docker run -dit -v docker-my-volume:/docker-my-volume --name ubuntu-volume ubuntu:rolling
+
+```
+
+![image](./img/42.png)
+
+Se crea un archivo para el volumen docker-my-volume desde el contenedor de ubuntu:rolling, para poder observar si en el volumen de mysql también se crea. 
+
+```
+
+touch iminubuntu.txt
+
+```
+
+![image](./img/43.png)
+
+![image](./img/44.png)
+
+
+### Sección 4: Volúmenes Manuales
+
+### Sección 5: Redes
+
+### Sección 6: Conectando Contenedor a Red
+
+### Sección 7: Red Hosts
+
+
+
+---
+
+
+## 5. Docker Compose 🙋🏻‍♀️
+
+- Qué es Docker Compose
+- Servicios
+- Redes
+- Volúmenes
+- Variables de Entorno
+- Docker Compose Build
+
+### Sección 1: Qué es Docker Compose
+### Sección 2: Servicios
+### Sección 3: Redes
+### Sección 4: Volúmenes
+### Sección 5: Variables de Entorno
+### Sección 6: Docker Compose Build
+
+
+
+---
+
+
+## 6. Introducción a Kubernets 🙋🏻‍♀️
+
+- Qué son los Orquestadores
+- Conceptos Básicos
+- Instalación
+- Primer Pod
+- Port Foward
+- Terminal Interactiva
+- Eliminar Pods
+- Logs en Pods
+
+### Sección 1: Qué son los Orquestadores
+### Sección 2: Conceptos Básicos
+### Sección 3: Instalación
+### Sección 4: Primer Pod
+### Sección 5: Port Foward
+### Sección 6: Terminal Interactiva
+### Sección 7: Eliminar Pods
+### Sección 8: Logs en Pods
+
+---
+
+
+## 7. Extras 🙋🏻‍♀️
+
+- Consumir API Docker
+- Docker Portainer
+- Docker Aplicaciones Gráficas
+- Entorno VSCode
+
+### Sección 1: Consumir API Docker
+### Sección 2: Docker Portainer
+### Sección 3: Docker Aplicaciones Gráficas
+### Sección 4: Entorno VSCode
 
