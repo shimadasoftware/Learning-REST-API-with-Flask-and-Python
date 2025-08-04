@@ -839,7 +839,6 @@ sudo docker run -dit ubuntu:rolling
 - Volúmenes Manuales
 - Redes
 - Conectando Contenedor a Red
-- Red Hosts
 
 
 ### Sección 1: Qué son los Volúmenes
@@ -936,11 +935,267 @@ touch iminubuntu.txt
 
 ### Sección 4: Volúmenes Manuales
 
+La ruta local:
+
+```
+
+/home/juana/Documentos/master_degree/semester4/1/docker
+
+```
+
+![image](./img/45.png)
+
+```
+
+sudo docker run -dit -v /home/juana/Documentos/master_degree/semester4/1/docker:/docker-my-volume ubuntu:rolling 
+```
+
+![image](./img/46.png)
+
+![image](./img/47.png)
+
+
 ### Sección 5: Redes
+
+- Permiten Conexión a internet.
+- Los contenedores se pueden encontrar por las IPs.
+
+![image](./img/48.png)
+
+![image](./img/49.png)
 
 ### Sección 6: Conectando Contenedor a Red
 
-### Sección 7: Red Hosts
+Cuando instalas Docker, este crea automáticamente tres redes predefinidas que puedes usar para conectar contenedores entre sí o con el exterior.
+
+* Null:
+
+Si se agrega esta red por defecto indica que el contenedor no va a tener conexión a internet.
+
+* Host:
+
+El contenedor comparte la pila de red del host. 
+No tiene su propia IP; usa la del host directamente.
+Útil para casos donde necesitas máxima velocidad o acceso a puertos sin NAT.
+Servicios que requieren rendimiento alto, servidores DNS, o apps que usan multicast.
+
+* Bridge:
+
+Por defecto para contenedores independientes. 
+Es una red NAT virtual creada automáticamente.
+Si no especificas una red al ejecutar un contenedor, Docker lo conecta a esta red bridge (docker0).
+Ejecutas contenedores individuales o pequeños grupos que necesitan comunicarse entre sí.
+Necesitas aislamiento de red pero también acceso a internet.
+Desarrollo local, microservicios, apps web sencillas.
+
+![image](./img/50.png)
+
+Ejemplo de Bridge:
+
+![image](./img/51.png)
+
+![image](./img/52.png)
+
+Para crear una red por defecto bridge:
+
+```
+
+sudo docker network create docker-network
+
+```
+
+![image](./img/53.png)
+
+![image](./img/54.png)
+
+![image](./img/55.png)
+
+Para contectar el contendor a la red:
+
+```
+
+docker run --help
+
+```
+
+![image](./img/56.png)
+
+
+```
+
+sudo docker run -dit --network docker-network ubuntu:rolling
+
+```
+
+![image](./img/57.png)
+
+![image](./img/58.png)
+
+
+```
+
+sudo docker run -dit --name ubuntu-network --network docker-network ubuntu:rolling
+
+```
+
+![image](./img/59.png)
+
+Recordándo:
+
+El primer contenedor conectado con la red docker-network tiene la "IPAddress": "172.18.0.2" terminada en 2.
+
+```
+sudo docker inspect fec09cc9a553
+
+
+"Networks": {
+                "docker-network": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "MacAddress": "de:31:50:45:14:9b",
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "8e6dc43cc6361eb2c1ef7e30b4e5a985159896765324931038f07133c842642a",
+                    "EndpointID": "66847e6e7b51657f80b97384c2cac4a296d940b8457873c0df5104696c5328aa",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "elated_ptolemy",
+                        "fec09cc9a553"
+                    ]
+                }
+
+```
+
+El contenedor ubuntu-network que se acaba de conectar a la red, termina en 3.
+
+```
+sudo docker inspect 8f5fd78737c8
+
+
+"Networks": {
+                "docker-network": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "MacAddress": "52:8d:fe:95:2d:e0",
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "8e6dc43cc6361eb2c1ef7e30b4e5a985159896765324931038f07133c842642a",
+                    "EndpointID": "8b640d49f24e1a5620c969c480515f8398bfd3510dda165c4a4cd8ad7a8599cc",
+                    "Gateway": "172.18.0.1",
+                    "IPAddress": "172.18.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "ubuntu-network",
+                        "8f5fd78737c8"
+                    ]
+                }
+            }
+
+```
+
+Se realiza un ping para cada una:
+
+```
+
+sudo docker exec -it 8f5fd78737c8 bash
+apt-get update
+apt-get install iputils-ping -y
+apt-get install net-tools -y
+root@8f5fd78737c8:/# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.18.0.3  netmask 255.255.0.0  broadcast 172.18.255.255
+        ether 52:8d:fe:95:2d:e0  txqueuelen 0  (Ethernet)
+        RX packets 8898  bytes 26074273 (26.0 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 6015  bytes 402710 (402.7 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 8  bytes 986 (986.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 8  bytes 986 (986.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@8f5fd78737c8:/# ping 172.18.0.2
+PING 172.18.0.2 (172.18.0.2) 56(84) bytes of data.
+64 bytes from 172.18.0.2: icmp_seq=1 ttl=64 time=0.175 ms
+64 bytes from 172.18.0.2: icmp_seq=2 ttl=64 time=0.089 ms
+64 bytes from 172.18.0.2: icmp_seq=3 ttl=64 time=0.094 ms
+64 bytes from 172.18.0.2: icmp_seq=4 ttl=64 time=0.103 ms
+64 bytes from 172.18.0.2: icmp_seq=5 ttl=64 time=0.112 ms
+64 bytes from 172.18.0.2: icmp_seq=6 ttl=64 time=0.103 ms
+64 bytes from 172.18.0.2: icmp_seq=7 ttl=64 time=0.126 ms
+^C
+--- 172.18.0.2 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 6150ms
+rtt min/avg/max/mdev = 0.089/0.114/0.175/0.027 ms
+
+```
+
+También se puede hacer ping por el nombre del contenedor:
+
+```
+root@fec09cc9a553:/# ping ubuntu-network
+PING ubuntu-network (172.18.0.3) 56(84) bytes of data.
+64 bytes from ubuntu-network.docker-network (172.18.0.3): icmp_seq=1 ttl=64 time=0.107 ms
+64 bytes from ubuntu-network.docker-network (172.18.0.3): icmp_seq=2 ttl=64 time=0.082 ms
+64 bytes from ubuntu-network.docker-network (172.18.0.3): icmp_seq=3 ttl=64 time=0.126 ms
+^C
+--- ubuntu-network ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2055ms
+rtt min/avg/max/mdev = 0.082/0.105/0.126/0.018 ms
+```
+
+Otra:
+
+```
+
+sudo docker exec -it fec09cc9a553 bash
+apt-get update
+apt-get install iputils-ping -y
+apt-get install net-tools -y
+root@fec09cc9a553:/# ifconfig
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.18.0.2  netmask 255.255.0.0  broadcast 172.18.255.255
+        ether de:31:50:45:14:9b  txqueuelen 0  (Ethernet)
+        RX packets 5251  bytes 25908105 (25.9 MB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 2417  bytes 164374 (164.3 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 8  bytes 986 (986.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 8  bytes 986 (986.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+root@fec09cc9a553:/# ping 172.18.0.3
+PING 172.18.0.3 (172.18.0.3) 56(84) bytes of data.
+64 bytes from 172.18.0.3: icmp_seq=1 ttl=64 time=0.144 ms
+64 bytes from 172.18.0.3: icmp_seq=2 ttl=64 time=0.110 ms
+64 bytes from 172.18.0.3: icmp_seq=3 ttl=64 time=0.117 ms
+^C
+--- 172.18.0.3 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2062ms
+rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
+
+```
 
 
 
