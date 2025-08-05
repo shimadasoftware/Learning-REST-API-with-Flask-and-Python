@@ -1197,12 +1197,430 @@ rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
 
 ```
 
+---
+
+
+## 5. Imágenes 🙋🏻‍♀️
+
+- Qué son las imágenes
+- Primera Imagen
+- Copiando Archivos
+- Variables de Entorno
+- Ejecutar Servicios
+- Entry Point VS CMD
+- Dokenizar Script Python
+- Docker Hub
+- Dokenizar Script Node
+
+### Sección 1: Qué son las imágenes
+
+Una imagen es un paquete inmutable (solo lectura) que contiene todo lo necesario para ejecutar una aplicación (sistema de archivos, código, dependencias, configuraciones).
+
+🔹 Características:
+
+Se crean a partir de un Dockerfile (archivo de configuración).
+
+Se almacenan en repositorios como Docker Hub.
+
+Son la "plantilla" para crear contenedores.
+
+![image](./img/60.png)
+
+Se necesita archivo Docker File para poder crear el contendor. 
+
+### Sección 2: Primera Imagen
+
+Para crear un archivo de Docker no se necesita extensión solo escribir **Dockerfile**:
+
+Directivas: 
+
+* FROM → Imagen base sobre la que construirás tu contenedor.
+
+* RUN → Ejecuta comandos durante la construcción de la imagen.
+
+* COPY → Copia archivos al contenedor.
+
+* CMD → Comando por defecto al iniciar el contenedor.
+
+A continuación, se construye el archivo:
+
+![image](./img/61.png)
+
+Ahora se compila el archivo, al final hay que poner la ruta dónde se encuentra el docker file.
+
+```
+
+sudo docker build --help
+
+sudo docker build -t ubuntu-with-python ./
+
+```
+
+![image](./img/62.png)
+
+```
+
+sudo docker image ls
+
+sudo docker run -it ubuntu-with-python
+
+```
+
+![image](./img/63.png)
+
+### Sección 3: Copiando Archivos
+
+* COPY → Copia archivos del host al contenedor.
+
+Rutas son relativas al contexto de build (directorio donde ejecutas docker build).
+
+Si el destino no existe, se crea automáticamente.
+
+![image](./img/64.png)
+
+* WORKDIR → Definir la ruta (directorio) de trabajo dentro del contenedor para los comandos posteriores. Si el directorio no existe, Docker lo crea automáticamente.
+
+Dockerfile:
+
+```
+
+FROM ubuntu:rolling
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    curl \
+    nano 
+
+COPY . /app
+
+WORKDIR /app
+
+```
+
+```
+
+sudo docker build -t ubuntu-with-python:v2 ./
+sudo docker run -it ubuntu-with-python:v2
+
+```
+
+### Sección 4: Variables de Entorno
+
+Los valores de las varianles de entorno que se asignan desde el docker file son constantes.
+
+* ENV: Define variables de entorno persistentes dentro del contenedor.
+
+```
+
+FROM ubuntu:rolling
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV version=1.0
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    curl \
+    nano 
+
+COPY . /app
+
+WORKDIR /app
+
+```
+
+![image](./img/65.png)
+
+Los argumentos de construcción permiten modificar el comportamiento de la imagen.
+
+* ARG: Variables temporales solo durante el build (no persisten en el contenedor final).
+
+```
+
+FROM ubuntu:rolling
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV version=1.0
+
+ARG TEXT_EDITOR=nano
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    curl \
+    nano  \
+    $TEXT_EDITOR
+
+COPY . /app
+
+WORKDIR /app
+
+```
+
+![image](./img/66.png)
+
+```
+
+sudo docker build -t ubuntu-with-python:v4 --build-arg="TEXT_EDITOR=vim" ./
+
+```
+
+![image](./img/67.png)
+
+| Característica    | `ENV`                                | `ARG`                                 |
+|-------------------|---------------------------------------|----------------------------------------|
+| **Disponibilidad** | En build y runtime                   | Solo en build                          |
+| **Sobrescribir**   | `docker run -e VAR=valor`            | `docker build --build-arg VAR=valor`   |
+| **Persistencia**   | Sí                                   | No                                     |
+
+
+### Sección 5: Ejecutar Servicios
+
+El comando run no sirve para ejecutar servicios, ya que solo se ejecuta al momento de copilar la imagen. Para esto existe el comando:
+
+* CMD → Comando por defecto al iniciar el contenedor.
+
+Define el comando por defecto que se ejecutará cuando el contenedor inicie.
+
+Especifica el proceso principal del contenedor (si este proceso termina, el contenedor se detendrá).
+
+Puede ser sobrescrito al ejecutar el contenedor con docker run <imagen> <nuevo-comando>.
+
+![image](./img/68.png)
+
+```
+
+sudo docker build -t ubuntu-with-python:v5 ./
+
+sudo docker run -it ubuntu-with-python:v5
+
+```
+
+![image](./img/69.png)
+
+```
+
+sudo docker ps
+
+sudo docker run -d -p 8082:80 ubuntu-with-python:v5
+
+curl localhost:8082
+
+sudo docker inspect 89f39976e9e8
+
+```
+
+![image](./img/70.png)
+
+![image](./img/71.png)
+
+
+### Sección 6: Entry Point VS CMD
+
+El comando cmd puede ser sobrescrito al ejecutar el contenedor con docker run <imagen> <nuevo-comando>.
+
+![image](./img/72.png)
+
+![image](./img/73.png)
+
+![image](./img/74.png)
+
+```
+
+sudo docker stop 37fa188d349e
+
+sudo docker run -d -p 8082:80 ubuntu-with-python:v5 ls -al
+
+sudo docker logs a720a992f735
+
+sudo docker ps -a
+
+sudo docker logs 6542876e94bc
+
+```
+Para evitar que el comando pueda ser reemplazado se utiliza:
+
+* ENTRYPOINT → Define el ejecutable principal que se ejecutará cuando el contenedor inicie. 
+
+```
+
+FROM ubuntu:rolling
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV version=1.0
+
+ARG TEXT_EDITOR=nano
+
+RUN apt-get update && apt-get install -y \
+    python3 \
+    curl \
+    nano  \
+    nginx
+
+COPY . /app
+
+WORKDIR /app
+
+#CMD ["nginx", "-g", "daemon off;"]
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+```
+
+```
+
+sudo docker ps
+sudo docker build -t ubuntu-with-python:v6 ./
+sudo docker run -d -p 8082:80 ubuntu-with-python:v6
+sudo docker run -d -p 8082:80 ubuntu-with-python:v6 ls -la
+
+```
+![image](./img/75.png)
+
+| Característica                                      | `CMD`                                       | `ENTRYPOINT`                              |
+|----------------------------------------------------|---------------------------------------------|-------------------------------------------|
+| Se puede sobrescribir con `docker run <imagen> <nuevo-comando>` | ✅ Sí                                  | ❌ No (a menos que se use `--entrypoint`) |
+| Ideal para pasar argumentos por defecto.                        | Pasar argumentos por defecto                | Definir ejecutables base                  |
+
+El comando ENTRYPOINT en un Dockerfile es una instrucción clave que define el ejecutable principal que se ejecutará cuando el contenedor inicie. A diferencia de CMD (que establece argumentos por defecto), ENTRYPOINT especifica el comando base que siempre se ejecutará, incluso si se pasan argumentos adicionales con docker run.
+
+### Sección 7: Dokenizar Script Python
+
+Se utilizan los archivos de:
+
+- entrypoint.sh
+- main.py
+
+![image](./img/77.png)
+
+![image](./img/78.png)
+
+![image](./img/79.png)
+
+```
+
+sudo docker build -t ubuntu-with-python:v7 ./
+
+sudo docker run -d -p 8082:80 ubuntu-with-python:v7
+
+sudo docker ps -a
+
+sudo docker logs df6f2ffcb9e9
+
+sudo docker run -p 8082:80 ubuntu-with-python:v7
+
+```
+
+![image](./img/76.png)
+
+### Sección 8: Docker Hub
+
+Crear una cuenta en Docker Hub para poder compartir una imagen.
+
+![image](./img/80.png)
+
+Crea un repositorio:
+
+![image](./img/82.png)
+
+Posteriormente, ingresar desde la terminal.
+
+```
+
+sudo docker login
+
+```
+
+![image](./img/83.png)
+
+![image](./img/84.png)
+
+![image](./img/85.png)
+
+![image](./img/86.png)
+
+```
+
+sudo docker image tag ubuntu-with-python juanavmendozas/ubuntu-example:v7
+
+sudo docker push
+
+sudo docker push juanavmendozas/ubuntu-example:v7
+
+```
+
+Posteriormente, se hace tag al contendor que se desea subir.
+
+![image](./img/87.png)
+
+![image](./img/88.png)
+
+![image](./img/89.png)
+
+![image](./img/90.png)
+
+Para descargar el contenedor:
+
+![image](./img/91.png)
+
+![image](./img/92.png)
+
+![image](./img/93.png)
+
+![image](./img/94.png)
+
+
+### Sección 8: Dokenizar Script Node
+
+Archivo index.js:
+
+![image](./img/95.png)
+
+Archivo Dockerfile:
+
+![image](./img/96.png)
+
+Archivo entrypoint.sh:
+
+![image](./img/97.png)
+
+Para evitar que más adelante se presente un error cuando instala node desde el dockerfile, se debe de incluir el archivo package.json e instalar node:
+
+```
+
+sudo dnf install nodejs npm
+
+npm install
+
+```
+
+![image](./img/98.png)
+
+![image](./img/99.png)
+
+Finalmente, se generan los archivos .json
+
+![image](./img/100.png)
+
+Si se llega a tener un archivo que se desea ignorar, como podría ser ya tener el node_modules, se crea un archivo .dockerignore:
+
+![image](./img/101.png)
+
+![image](./img/102.png)
+
+![image](./img/103.png)
+
+```
+
+sudo docker build -t ubuntu-with-node:v1 ./
+
+sudo docker run -d -p 3000:3000 ubuntu-with-node:v1
+
+```
 
 
 ---
 
 
-## 5. Docker Compose 🙋🏻‍♀️
+## 6. Docker Compose 🙋🏻‍♀️
 
 - Qué es Docker Compose
 - Servicios
@@ -1212,10 +1630,20 @@ rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
 - Docker Compose Build
 
 ### Sección 1: Qué es Docker Compose
+
+
 ### Sección 2: Servicios
+
+
 ### Sección 3: Redes
+
+
 ### Sección 4: Volúmenes
+
+
 ### Sección 5: Variables de Entorno
+
+
 ### Sección 6: Docker Compose Build
 
 
@@ -1223,7 +1651,7 @@ rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
 ---
 
 
-## 6. Introducción a Kubernets 🙋🏻‍♀️
+## 7. Introducción a Kubernets 🙋🏻‍♀️
 
 - Qué son los Orquestadores
 - Conceptos Básicos
@@ -1235,18 +1663,25 @@ rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
 - Logs en Pods
 
 ### Sección 1: Qué son los Orquestadores
+
 ### Sección 2: Conceptos Básicos
+
 ### Sección 3: Instalación
+
 ### Sección 4: Primer Pod
+
 ### Sección 5: Port Foward
+
 ### Sección 6: Terminal Interactiva
+
 ### Sección 7: Eliminar Pods
+
 ### Sección 8: Logs en Pods
 
 ---
 
 
-## 7. Extras 🙋🏻‍♀️
+## 8. Extras 🙋🏻‍♀️
 
 - Consumir API Docker
 - Docker Portainer
@@ -1254,7 +1689,10 @@ rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
 - Entorno VSCode
 
 ### Sección 1: Consumir API Docker
+
 ### Sección 2: Docker Portainer
+
 ### Sección 3: Docker Aplicaciones Gráficas
+
 ### Sección 4: Entorno VSCode
 
