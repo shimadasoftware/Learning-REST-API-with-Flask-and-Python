@@ -2202,7 +2202,9 @@ El conjunto de servidores de máquinas virtuales para que una aplicación funcio
 Es una plataforma open-source que:
 
 ✅ Automatiza el despliegue, escalado y gestión de aplicaciones en contenedores.
+
 ✅ Garantiza alta disponibilidad (que tu app no se caiga).
+
 ✅ Distribuye cargas de trabajo en múltiples servidores (nodos).
 
 Ejemplo:
@@ -2284,15 +2286,203 @@ Actualiza tu app sin tiempo de inactividad y revierte cambios si algo sale mal.
 
 ### Sección 3: Instalación
 
+![image](./img/148.png)
+
+Para utilizar Kubernets de forma local se puede hacer mediante: [Minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Flinux%2Fx86-64%2Fstable%2Frpm+package) y Kind.
+
+**Minikube**
+
+Minikube es una herramienta que permite ejecutar un clúster de Kubernetes de un solo nodo en tu computadora local. Es ideal para:
+
+✅ Aprender Kubernetes sin necesidad de infraestructura compleja.
+
+✅ Desarrollar y probar aplicaciones antes de llevarlas a producción.
+
+✅ Experimentar con despliegues, pods y servicios en un entorno controlado.
+
+| Término   | ¿Qué es?                                                                 | ¿Para qué sirve?                                                        |
+|-----------|-------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| Minikube  | Herramienta que crea un clúster de Kubernetes local en tu máquina.     | Permite practicar Kubernetes sin necesidad de servidores en la nube.     |
+| kubectl   | CLI (Interfaz de Línea de Comandos) para gestionar Kubernetes.         | Te permite interactuar con tu clúster (ej: crear pods, servicios, etc.). |
+| Driver    | Software que Minikube usa para crear contenedores (Docker, Podman, etc.) | Define cómo se ejecutarán los contenedores de Kubernetes.                |
+
+Primero se deben de instalar las dependencias 
+
+Necesitas Docker (o Podman) y kubectl antes de Minikube:
+
+```
+
+# Descargar kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+# Verificar integridad (opcional pero recomendado)
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check  # Debe mostrar "kubectl: OK"
+
+# Instalar en /usr/local/bin (para evitar conflictos con paquetes del sistema)
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+```
+
+Posteriormente se instala minikube:
+
+```
+cd
+
+cd Descargas/
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm
+
+sudo rpm -Uvh minikube-latest.x86_64.rpm
+
+minikube start --driver=docker
+
+```
+
+<blockquote>
+<strong>⚠️ WARNING: </strong> Si se instala primero minikube
+</blockquote>
+
+Al momento de instalar las dependencias es recomendable hacerlo manulmente, ya que si se usa dnf va a quedar instalado kubernetes-client con una versión que no es la actual. 
+
+Inicialmente se hizo la instalación primero de minikube y luego de kubernetes-client. Se eliminó esta instalación de kubernetes-client. A continuación en las imágenes se puede ver el proceso:
+
+![image](./img/149.png)
+
+![image](./img/150.png)
+
+![image](./img/151.png)
+
+Al realizar el proceso de reinstalación el sistema busca kubectl en /usr/bin/ en lugar de /usr/local/bin/. Minikube a veces crea un enlace en /usr/bin/ que puede quedar roto al reinstalar. Fedora por defecto prioriza /usr/bin/ sobre /usr/local/bin/ en el PATH.
+
+![image](./img/152.png)
+
+![image](./img/153.png)
+
+Continua aquí si no hay problemas con la instalación:
+
+```
+
+kubectl
+
+kubectl get nodes
+
+```
+
+![image](./img/154.png)
+
+![image](./img/155.png)
+
+El comando get permite obtener objetos, un objeto es cada uno de los componentes, por ejemplo, pod, kube-scheduler, etc. El comando kubectl get nodes obtiene todos los nodos dentro del cluster. Al utilizar minikube solo se puede trabajar con un nodo, que en este caso es control-plane, que actual como el nodo master y el nodo worker.
+
+
 ### Sección 4: Primer Pod
+
+Ahora se va a trabajar con el componente más básico que es el pod. La unidad más básica de kubernets, que es un wrapper que contiene múltiples contenedores. Cuando se trabaja con Kubernets no se interactua los contenedores.
+
+```
+
+kubectl get pods
+
+sudo docker image ls
+
+kubectl run nginx-pods --image nginx:latest
+
+kubectl get pods
+
+kubectl get pods -o wide
+
+
+```
+
+![image](./img/156.png)
+
+![image](./img/157.png)
+
+En Visual Studio se pueden defir los objetos mediante el archivo nginx-pods.yml
+
+* apiVersion: Versión de la API de Kubernetes que estás usando.
+* kind: Tipo de recurso (objeto) que estás creando (en este caso, un Pod).
+* metadata: Metadatos que identifican el recurso. name: Nombre único que le das a este Pod.
+* spec: Especificación del estado deseado del Pod. 
+
+![image](./img/158.png)
+
+![image](./img/159.png)
+
+
+```
+
+apiVersion: v1       # Versión de la API de Kubernetes que estás usando
+kind: Pod            # Tipo de recurso que estás creando (en este caso, un Pod)
+metadata:            # Metadatos que identifican el recurso
+  name: nginx-pod-1  # Nombre único que le das a este Pod
+spec:                # Especificación del estado deseado del Pod
+  containers:        # Lista de contenedores que irán dentro del Pod
+    - name: nginx-pods  # Nombre del contenedor dentro del Pod
+      image: nginx:latest  # Imagen de Docker que se usará para el contenedor
+
+```
+
 
 ### Sección 5: Port Foward
 
+```
+
+kubectl get pods -o wide
+
+kubectl port-forward nginx-pods 8181
+
+kubectl port-forward nginx-pods 8181:80
+
+```
+
+![image](./img/160.png)
+
+![image](./img/161.png)
+
+![image](./img/162.png)
+
+No obstante, es momentaneo al momento de cancelar el proceso en terminal se pierde la conexión, para solucionar esto se usan servicios.
+
+
 ### Sección 6: Terminal Interactiva
+
+Para ingresar a la terminal desde los pods:
+
+```
+
+kubectl exec -it nginx-pods -- bash
+
+```
+
+![image](./img/163.png)
+
 
 ### Sección 7: Eliminar Pods
 
+Se pueden eliminar pods mediante el comando de delete o mediante el archivo nginx-pods.yml:
+
+![image](./img/164.png)
+
+![image](./img/165.png)
+
+
 ### Sección 8: Logs en Pods
+
+El comando describe para ver las características de un pod:
+
+```
+
+kubectl describe pods nginx-pods
+
+```
+
+![image](./img/166.png)
+
+![image](./img/167.png)
+
 
 ---
 
@@ -2306,9 +2496,18 @@ Actualiza tu app sin tiempo de inactividad y revierte cambios si algo sale mal.
 
 ### Sección 1: Consumir API Docker
 
+
+
+
 ### Sección 2: Docker Portainer
 
+
+
+
 ### Sección 3: Docker Aplicaciones Gráficas
+
+
+
 
 ### Sección 4: Entorno VSCode
 
