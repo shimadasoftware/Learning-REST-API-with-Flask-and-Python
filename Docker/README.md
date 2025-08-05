@@ -2103,7 +2103,184 @@ Comienza hacer el proceso de generar la imagen (build) y finalmente el contenedo
 
 ### Sección 1: Qué son los Orquestadores
 
+Orquestadores de Contenedores (Kubernetes, Docker Swarm, Mesos)
+
+**Qué son:**
+
+Herramientas para gestionar clústeres de contenedores en múltiples servidores, ideal para entornos de producción complejos.
+
+Características:
+✅ Escalabilidad horizontal: Distribuye contenedores en varios nodos.
+✅ Alta disponibilidad: Recuperación automática de fallos.
+✅ Balanceo de carga: Distribuye tráfico entre instancias.
+✅ Gestión de redes avanzada: Comunicación entre contenedores en distintos hosts.
+
+Los contenedores Docker son como cajas mágicas que guardan tus aplicaciones. Los orquestadores son como directores de orquesta que coordinan miles de estas cajas para que trabajen juntas sin problemas. 
+
+Es un sistema inteligente que gestiona múltiples contenedores Docker en varios servidores (como un ejército de robots organizando cajas mágicas). Su trabajo es:
+
+- Decidir dónde colocar cada contenedor.
+
+- Reemplazar los que fallen.
+
+- Escalar automáticamente si hay mucha demanda.
+
+![image](./img/145.png)
+
+**Orquestadores Famosos**
+
+1. Kubernetes (K8s)
+
+El más popular para contenedores, es desarrollado por Google.
+
+- Pods: Grupos de contenedores que trabajan juntos (como un food truck con cocinero y cajero).
+
+- Nodos: Servidores físicos donde corren los pods (como estacionamientos para food trucks).
+
+```
+
+kubectl create deployment pizza --image=chef-especial  # ¡Despliega tu app!
+
+```
+
+2. Docker Swarm
+
+El más simple. Como un "equipo de repartidores" de Docker:
+
+- Servicios: Define cuántas copias de un contenedor necesitas.
+
+- Redes: Conexiones privadas entre contenedores.
+
+```
+
+docker swarm init  # Convierte tu PC en el jefe
+docker service create --replicas 3 --name panaderos bakery-image  # 3 contenedores idénticos
+
+```
+
+3. Apache Mesos
+
+Para supercomputadoras. Como un "arquitecto de ciudades":
+
+Gestiona contenedores + otros recursos (CPU, RAM, disco).
+
+**Orquestadores Vs Docker Compose**
+
+¿Cuándo usar cada uno?
+
+Docker Compose:
+
+- Prototipado rápido.
+
+- Entornos locales con dependencias (DB, cache, etc.).
+
+Orquestadores:
+
+- Apps en producción con alta demanda.
+
+- Sistemas distribuidos con microservicios.
+
+| Característica  | Orquestadores (K8s/Swarm)        | Docker Compose               |
+|------------------|----------------------------------|------------------------------|
+| Alcance          | Multi-nodo (producción)          | Single-nodo (desarrollo)     |
+| Escalabilidad    | Automática (pods/replicas)       | Manual                       |
+| Archivos         | Manifiestos YAML/JSON complejos  | docker-compose.yml           |
+| Redes            | Entre nodos                      | Solo en local                |
+| Uso típico       | Producción, microservicios       | Desarrollo, pruebas          |
+
+
 ### Sección 2: Conceptos Básicos
+
+Kubernetes (abreviado K8s) es el orquestador de contenedores más popular del mundo. Imagínalo como el "sistema operativo" para gestionar aplicaciones en contenedores (como Docker) a gran escala.
+
+El conjunto de servidores de máquinas virtuales para que una aplicación funcione son los clústers. Un clúster se conforma de 1 o varios servidores (máquinas virtuales).
+
+![image](./img/146.png)
+
+**📌 ¿Qué es Kubernetes?**
+
+Es una plataforma open-source que:
+
+✅ Automatiza el despliegue, escalado y gestión de aplicaciones en contenedores.
+✅ Garantiza alta disponibilidad (que tu app no se caiga).
+✅ Distribuye cargas de trabajo en múltiples servidores (nodos).
+
+Ejemplo:
+
+Si tienes una app como Netflix, Kubernetes se encarga de:
+
+- Lanzar más contenedores cuando hay muchos usuarios.
+
+- Reemplazar los que fallen.
+
+- Balancear el tráfico entre ellos.
+
+**🏗️ Arquitectura de Kubernetes**
+
+Kubernetes funciona como un equipo bien organizado:
+
+1. Nodo Maestro (Control Plane)
+
+Es el "cerebro" que toma decisiones. Incluye:
+
+* API Server: La "puerta de entrada" para gestionar Kubernetes. Terminal con los comandos.
+
+* Scheduler: Decide en qué nodo se ejecuta cada contenedor.
+
+* Controller Manager: Supervisa y corrige estados (ej: si un contenedor se cae).
+
+* etcd: Base de datos que guarda toda la configuración. Orientada a sistemas distribuidos.
+
+2. Nodos Worker (Nodos de Trabajo)
+
+Son los "trabajadores" donde corren las aplicaciones. Cada nodo tiene:
+
+* Kubelet: Agente (Proxy) que comunica el nodo con el maestro.
+
+* Kube-proxy: Gestiona las redes (como un router).
+
+* Contenedores: Las apps que ejecutas (Docker, containerd, etc.).
+
+3. Componentes Clave
+
+* Pods: La unidad más pequeña en K8s (1+ contenedores que comparten recursos).
+
+* Deployments: Define cuántas copias de un Pod deben estar activas.
+
+* Services: Expone tus Pods al mundo (como un balanceador de carga).
+
+![image](./img/147.png)
+
+🚀 Características Principales:
+
+1. Autoescalado
+
+Horizontal: Crea más Pods si la app recibe mucho tráfico.
+
+Vertical: Aumenta recursos (CPU/RAM) a un Pod existente.
+
+2. Auto-reparación
+
+Si un contenedor falla, Kubernetes:
+
+Lo mata.
+
+Crea uno nuevo.
+
+3. Balanceo de Carga
+
+Distribuye el tráfico entre múltiples Pods para evitar sobrecargas.
+
+4. Gestión de Configuraciones y Secretos
+
+ConfigMaps: Guarda configuraciones (ej: variables de entorno).
+
+Secrets: Almacena datos sensibles (contraseñas, API keys).
+
+5. Rollouts y Rollbacks
+
+Actualiza tu app sin tiempo de inactividad y revierte cambios si algo sale mal.
+
 
 ### Sección 3: Instalación
 
