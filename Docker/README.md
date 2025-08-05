@@ -1627,25 +1627,464 @@ sudo docker run -d -p 3000:3000 ubuntu-with-node:v1
 - Redes
 - Volúmenes
 - Variables de Entorno
-- Docker Compose Build
+- Stack Local
+- Docker Compose 
 
 ### Sección 1: Qué es Docker Compose
 
+Docker recomienda que se debe de manejar un servicio por contenedor, pero en la realidad se necesitan muchos servicios. Por eso se utiliza Docker Composer que es un Orquestador local que permite trabajar con aplicaciones múltiples contenedores, mediante un archivo de configuración.
+
+Docker Compose es una herramienta para definir y ejecutar aplicaciones multi-contenedor usando un archivo YAML. Permite:
+✅ Orquestrar múltiples servicios (bases de datos, backends, frontends) en un solo comando.
+✅ Gestionar redes, volúmenes y variables de entorno centralizadamente.
+✅ Simplificar el desarrollo y despliegue de aplicaciones complejas.
 
 ### Sección 2: Servicios
+
+Verificar que esté instalado Docker Compose:
+
+```
+
+docker compose version
+
+docker compose --help
+
+```
+
+![image](./img/104.png)
+
+![image](./img/105.png)
+
+Para crear e iniciar los contenedores usar:
+
+```
+
+sudo docker compose up
+
+```
+
+![image](./img/106.png)
+
+Fedora incluye Docker Compose v2 como parte de Docker Engine (por eso docker compose funciona).
+
+```
+
+sudo docker compose up -d
+sudo docker compose ps
+sudo docker compose ls
+
+```
+
+![image](./img/107.png)
+
+El docker-compose crea una red y agrega todos los contenedores a esa red.
+
+```
+
+sudo docker network ls
+
+sudo docker inspect ubuntu
+
+```
+
+![image](./img/108.png)
+
+![image](./img/109.png)
+
+Para eliminar el contendor y la red creada:
+
+```
+
+sudo docker compose down
+
+```
+
+![image](./img/110.png)
+
+Si se cambian los parámetros docker compose recrea el contenedor, pero la red permanece igual:
+
+```
+
+sudo docker compose down
+
+```
+
+![image](./img/112.png)
+
+![image](./img/111.png)
+
+Si se agregan más propiedades, se puede observar la recreación de redis y de ubuntu2 a ubuntu.
+
+![image](./img/113.png)
 
 
 ### Sección 3: Redes
 
+Se pueden adicionar puertos a los servicios, que en sintaxis de yml son representados como arreglos:
+
+```
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+
+  redis:
+    image: redis
+    container_name: redis
+
+
+```
+
+![image](./img/114.png)
+
+![image](./img/115.png)
+
+```
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+
+  redis:
+    image: redis
+    container_name: redis
+
+
+```
+
+![image](./img/114.png)
+
+```
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+```
+
+* Debido a un problema con Fedora se modifica el puerto 80:80.
+
+![image](./img/115.png)
+
+![image](./img/116.png)
+
+![image](./img/117.png)
+
+Aunque, el contenedor tiene su propia red, también se pueden adicionar redes externas:
+
+Previamente estaba creada la red:
+
+8e6dc43cc636   docker-network
+
+```
+
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+      - "443:443"
+    networks:
+      - docker-network
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+networks:
+  docker-network:
+    external: true
+
+```
+
+![image](./img/118.png)
+
+![image](./img/119.png)
+
+Se puede observar que tiene agregada nginx:
+
+![image](./img/120.png)
+
 
 ### Sección 4: Volúmenes
+
+Previamente vimos que los volúmenes permiten persisir la información:
+
+```
+sudo docker volume ls
+
+sudo docker volume create ubuntu-volume-example
+
+```
+
+![image](./img/121.png)
+
+![image](./img/122.png)
+
+![image](./img/123.png)
+
+Se crea el volúmen con la ruta de: db-data:/var/lib/mysql
+
+![image](./img/125.png)
+
+Si accidentalmente se elimina el contenedor, los volúmenes nos permiten conservar la información.
+
+![image](./img/124.png)
 
 
 ### Sección 5: Variables de Entorno
 
+Se vuelven a inicializar los contenedores, pero como se pueden observar solo hay 3. ¿Pero qué pasa con el de MySQL?
 
-### Sección 6: Docker Compose Build
+![image](./img/126.png)
 
+El contenedor de MySQL como se vió previamente necesita de una variable de entorno obligatoria, la de la contraseña.
+
+![image](./img/127.png)
+
+
+```
+
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+    volumes:
+      - ./main.py:/main.py
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+      - "443:443"
+    networks:
+      - docker-network
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3312:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    
+    environment:
+      - MYSQL_ROOT_PASSWORD=12345
+
+volumes:
+  db-data:
+
+networks:
+  docker-network:
+    external: true
+
+```
+
+![image](./img/128.png)
+
+Ahora, aparece el contendor de mysql.
+
+![image](./img/129.png)
+
+No obstante, por temas de seguridad y probablemente se comparta el archivo docker-compose.yml, no está bien tener la contraseña ahí:
+
+![image](./img/130.png)
+
+```
+
+MYSQL_ROOT_PASSWORD=12345
+
+```
+
+![image](./img/131.png)
+
+```
+
+services:
+  ubuntu:
+    image: ubuntu
+    tty: true
+    container_name: ubuntu
+    volumes:
+      - ./main.py:/main.py
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "8080:80"
+      - "443:443"
+    networks:
+      - docker-network
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3312:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
+volumes:
+  db-data:
+
+networks:
+  docker-network:
+    external: true
+
+```
+
+### Sección 6: Stack Local
+
+Ahora se va a utilizar phpmyadmin que es una interfaz gráfica que permite trabajar con MySQL:
+
+![image](./img/133.png)
+
+![image](./img/134.png)
+
+
+El PMA_HOST es mysql y el puerto 8085:80.
+
+![image](./img/136.png)
+
+```
+
+services:
+  python:
+    image: python
+    tty: true
+    container_name: python
+    volumes:
+      - .:/scripts
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - "3312:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8085:80"
+    environment:
+      - PMA_HOST=mysql
+
+volumes:
+  db-data:
+
+```
+
+![image](./img/135.png)
+
+![image](./img/137.png)
+
+![image](./img/138.png)
+
+![image](./img/139.png)
+
+En el contenedor de Python dentro de la carpeta scripts se encuentran todos los archivos:
+
+```
+
+sudo docker compose ps
+
+sudo docker compose exec -it python bash
+
+
+```
+
+![image](./img/140.png)
+
+
+### Sección 7: Docker Compose Build
+
+Para trabajar imágenes en docker compose existen dos alternativas:
+
+1. Trabajar con el nombre de la imagen con su respectivo tag y reemplazarlo en la variable image en el docker-compose.yml:
+
+![image](./img/141.png)
+
+![image](./img/142.png)
+
+Pero no es la mejor forma de hacerlo por las diferentes versiones de la imagen.
+
+2. La segunda forma es reemplazar el tag image por build.
+
+Por ejemplo, se utilizará node momentaneamente:
+
+El context hace referencia al path donde se encuentra el Dockerfile.
+
+![image](./img/144.png)
+
+Comienza hacer el proceso de generar la imagen (build) y finalmente el contenedor (pull).
+
+![image](./img/143.png)
 
 
 ---
