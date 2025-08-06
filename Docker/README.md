@@ -2496,18 +2496,137 @@ kubectl describe pods nginx-pods
 
 ### Sección 1: Consumir API Docker
 
+Para poder consumir la API de Docker es necesario utilizar el socket.
 
+El archivo /var/run/docker.sock es un socket de Unix que actúa como la interfaz principal para comunicarse con el Docker Daemon (el servicio que gestiona contenedores, imágenes, redes, etc.).
+
+Cuando ejecutas comandos como docker ps o docker run, en realidad estás enviando peticiones a este socket.
+
+Es un mecanismo de IPC (Inter-Process Communication) que permite a procesos externos (como un contenedor) controlar Docker.
+
+¿Por qué montarlo en un contenedor con -v /var/run/docker.sock:/var/run/docker.sock?
+
+Al montar el socket dentro de un contenedor, le das a ese contenedor acceso total al Docker Daemon del host. Esto permite que el contenedor:
+
+* Cree, elimine o gestione otros contenedores (como si fuera el propio Docker CLI).
+
+* Interactúe con imágenes, redes y volúmenes del sistema host.
+
+* Sea útil para herramientas como Portainer, Jenkins o CI/CD pipelines que necesitan administrar contenedores.
+
+```
+
+sudo docker run -dit -v .:/app -v /var/run/docker.sock:/var/run/docker.sock ubuntu-with-python:v5
+sudo docker run -dit -v .:/app -v /var/run/docker.sock:/var/run/docker.sock python
+sudo docker exec -it 3339cf091683 bash
+
+
+```
+
+![image](./img/168.png)
+
+![image](./img/169.png)
+
+[Docker SDK for Python](https://docker-py.readthedocs.io/en/stable/)
+
+```
+
+import docker
+
+client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
+
+client.containers.run("ubuntu", "echo hello world")
+
+```
+
+![image](./img/170.png)
+
+![image](./img/171.png)
+
+Ahora una imagen:
+
+![image](./img/172.png)
+
+![image](./img/173.png)
+
+```
+
+import docker
+
+client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
+
+client.containers.run("ubuntu", "echo hello world")
+
+```
 
 
 ### Sección 2: Docker Portainer
 
+[Docker Portainer](https://docs.portainer.io/start/install/server/docker/linux)
 
+Portainer es una herramienta de gestión visual (GUI) para Docker y Kubernetes que permite administrar contenedores, imágenes, redes, volúmenes y otros recursos de manera sencilla a través de una interfaz web.
+
+Es especialmente útil para:
+
+Usuarios nuevos en Docker (para evitar comandos complejos).
+
+Equipos de desarrollo/operaciones que necesitan una forma gráfica de gestionar entornos Docker.
+
+Administradores de sistemas que quieren supervisar múltiples servidores Docker desde un solo lugar.
+
+```
+
+docker volume create portainer_data
+
+docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ee:lts
+
+```
+
+![image](./img/176.png)
+
+![image](./img/174.png)
+
+https://localhost:9443
+
+User: admin
+
+Password: 12345678987654321
+
+![image](./img/175.png)
+
+<blockquote>
+<strong>⚠️ WARNING: </strong> Portainer te solicita una licencia que puede ser solicitada gratuitamente.
+</blockquote>
+
+![image](./img/176.png)
+
+Una vez ingresas:
+
+Dar clic sobre local
+
+![image](./img/177.png)
+
+![image](./img/178.png)
+
+![image](./img/179.png)
 
 
 ### Sección 3: Docker Aplicaciones Gráficas
+
+Ejecutar aplicaciones gráficas dentro del contenedor y poder visualizarlas dentro del host (fuera del contenedor).
+
+X Window System es un sistema de ventanas en Linux que actua como cliente servidor.
+
+Definir una variable de entorno para pasarla al contendor, que permita ejecutar aplicaciones gráficas.
 
 
 
 
 ### Sección 4: Entorno VSCode
+
+
+
+
+
+
 
