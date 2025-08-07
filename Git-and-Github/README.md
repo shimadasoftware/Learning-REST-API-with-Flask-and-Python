@@ -12,7 +12,7 @@ git init
 
 ```
 
-![image](./1.png)
+![image](./img/1.png)
 
 2. Verificar la configuración actual.
 
@@ -22,7 +22,7 @@ git config --local --list
 
 ```
 
-![image](./2.png)
+![image](./img/2.png)
 
 3. Configurar usuario y email solo para este repositorio:
 
@@ -34,7 +34,7 @@ git config --local --list
 
 ```
 
-![image](./3.png)
+![image](./img/3.png)
 
 4. Generar una nueva clave SSH para la otra cuenta (no sobreescribir la personal):
 
@@ -44,7 +44,7 @@ ssh-keygen -t ed25519 -C "jv.mendoza@uniandes.edu.co" -f ~/.ssh/id_ed25519_unian
 
 ```
 
-![image](./4.png)
+![image](./img/4.png)
 
 5. Agregar la clave al agente SSH:
 
@@ -55,9 +55,9 @@ ssh-add ~/.ssh/id_ed25519_uniandes
 
 ```
 
-![image](./5.png)
+![image](./img/5.png)
 
-![image](./6.png)
+![image](./img/6.png)
 
 6. Configurar ~/.ssh/config para usar la clave correcta:
 
@@ -77,7 +77,7 @@ Host github.com-uniandes
 
 ```
 
-![image](./7.png)
+![image](./img/7.png)
 
 7. Ver el contenido de la llave pública:
 
@@ -87,7 +87,7 @@ cat ~/.ssh/id_ed25519_uniandes.pub
 
 ```
 
-![image](./8.png)
+![image](./img/8.png)
 
 Verás algo como:
 
@@ -99,7 +99,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJt7... jv.mendoza@uniandes.edu.co
 
 Posteriormente, en el Github se agrega la llave pública para conectar el Github. Ve a Settings → SSH and GPG keys → New SSH key.
 
-![image](./9.png)
+![image](./img/9.png)
 
 Probar la conexión SSH:
 
@@ -109,7 +109,7 @@ Probar la conexión SSH:
 
 ```
 
-![image](./10.png)
+![image](./img/10.png)
 
 
 ## Tutorial: Crear y clonar repositorio
@@ -143,11 +143,11 @@ En este tutorial trabajaremos en las siguientes prácticas para implementar docu
 
 Para este tutorial haremos uso de este [template](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/dann-personal-username), para crear su repositorio personal y realizar pruebas de código y pipelines sin agregar código innecesario a su repositorio del proyecto.
 
-![image](./11.png)
+![image](./img/11.png)
 
 Acceda al repositorio y haga click en el botón Use this template, y después Create a new repository.
 
-![image](./12.png)
+![image](./img/12.png)
 
 Clone el repositorio recién creado en su ambiente ejecutando:
 
@@ -158,9 +158,9 @@ git clone git@github.com:MISW-4301-Desarrollo-Apps-en-la-Nube/dann-personal--Jua
 
 ```
 
-![image](./13.png)
+![image](./img/13.png)
 
-![image](./14.png)
+![image](./img/14.png)
 
 
 ## Tutorial: Crear documentación
@@ -171,11 +171,11 @@ Abra el proyecto en el IDE de su preferencia. Si está trabajando con Visual Stu
 - PlantUML
 - Markdown all in one
 
-![image](./16.png)
+![image](./img/16.png)
 
-![image](./17.png)
+![image](./img/17.png)
 
-![image](./18.png)
+![image](./img/18.png)
 
 1. Cree una nueva rama con el nombre feature/dac, puede hacerlo en su terminal ejecutando:
 
@@ -185,7 +185,7 @@ git checkout -b feature/dac
 
 ```
 
-![image](./15.png)
+![image](./img/15.png)
 
 ### PlantUML
 
@@ -207,7 +207,7 @@ En la carpeta /docs/diagrams cree un archivo con el nombre components.puml y agr
 
 docs/diagrams/components.puml
 
-![image](./19.png)
+![image](./img/19.png)
 
 ```
 
@@ -226,7 +226,7 @@ application2 --> app1interface
 
 ```
 
-![image](./20.png)
+![image](./img/20.png)
 
 Este código en PlantUML define un diagrama de componentes UML que muestra la relación entre dos aplicaciones (`Application1` y `Application2`) a través de una interfaz HTTP.
 
@@ -290,19 +290,19 @@ Para observar el diagrama tiene dos alternativas:
 
 1. Hacer uso del plugin en visual studio code (ctrl + shift + p), seleccionado el comando Preview:
 
-![image](./21.png)
+![image](./img/21.png)
 
-![image](./22.png)
+![image](./img/22.png)
 
 2. Hacer uso del editor en línea de plantUML https://editor.plantuml.com/uml/
 
-![image](./23.png)
+![image](./img/23.png)
 
 Hands on: Agregue dos aplicaciones más como componentes, y otro componente que corresponda a un proxy. Conecte todos los componentes al proxy.
 
 Revise la documentación del diagrama de componentes, encontrará cómo decorar, agrupar y añadir notas, entre otros features.
 
-![image](./24.png)
+![image](./img/24.png)
 
 ```
 
@@ -365,7 +365,7 @@ note top of app : Mi aplicación
 
 ```
 
-![image](./25.png)
+![image](./img/25.png)
 
 Hands on: Agregue un API Gateway en el diagrama y conéctelo al componente de aplicación.
 
@@ -408,7 +408,7 @@ pets }|..|| owners
 
 ```
 
-![image](./26.png)
+![image](./img/26.png)
 
 En este diagrama se representan dos entidades por medio de un diagrama entidad relación. La documentación de este tipo de diagramas la encuentra en https://plantuml.com/ie-diagram.
 
@@ -455,7 +455,7 @@ pets }|..|| owners : owned by
 
 ```
 
-![image](./27.png)
+![image](./img/27.png)
 
 
 #### README
@@ -486,7 +486,7 @@ Este es un ejemplo de documentación técnica del proyecto
 
 ```
 
-![image](./28.png)
+![image](./img/28.png)
 
 Podrá observar que el documento referencia los diagramas como archivos tipo PNG y NO archivos PUML, dado que markdown no soporta archivos PUML si queremos mostrar nuestros diagramas en la documentación.
 
@@ -518,9 +518,9 @@ Markdown: Open Preview
 
 ```
 
-![image](./29.png)
+![image](./img/29.png)
 
-![image](./30.png)
+![image](./img/30.png)
 
 
 
