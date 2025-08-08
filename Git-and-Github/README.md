@@ -522,95 +522,467 @@ Markdown: Open Preview
 
 ![image](./img/30.png)
 
+### 4. Pipeline de documentación
 
+![image](./img/31.png)
 
+En el repositorio encontrará un pipeline ya configurado para verificar la documentación haciendo uso de Vale [3].
 
+.github/workflows/ci_pipeline.yml
 
+```
 
+name: CI pipeline
+on:
+  push:
+    branches:
+      - feature/dac
+  pull_request:
+    branches:
+      - feature/dac
+jobs:
+  vale:
+    name: Docs checker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: errata-ai/vale-action@v2.1.1
+        with:
+          version: 3.12.0
+          files: docs
+          fail_on_error: true
+          filter_mode: nofilter
+          reporter: local
 
+```
 
+![image](./img/32.png)
 
+Este pipeline se ejecuta cuando se crea un PR o hace push a la rama main. El job que está configurado ejecuta Vale sobre la carpeta docs (files: docs) y lanza excepción si encuentra que hay algún error en la documentación. La configuración de Vale la puede encontrar en el archivo vale.ini.
 
+Lo invitamos a revisar Vale para entender las posibilidades al usar esta herramienta.
 
+<blockquote>
+<strong>⚠️ WARNING: </strong> Aclaración del código .github/workflows/ci_pipeline.yml
+</blockquote>
 
+Es un pipeline de integración continua (CI) específicamente orientado a verificar la calidad de la documentación en tu proyecto. 
 
+📌 ¿Para qué es este pipeline?
 
+Este pipeline automatiza la revisión de la calidad del contenido en texto dentro de la carpeta docs/ usando una herramienta llamada Vale.
 
+🎯 Su propósito:
 
+- Asegurar que la documentación cumpla con estándares de estilo, gramática o escritura técnica.
 
+- Detectar errores o inconsistencias automáticamente, como parte del flujo de desarrollo.
 
+🔍 ¿Qué es Vale?
 
+[Vale](https://vale.sh/) es una herramienta de estilo para texto. Funciona como un linter para la documentación: revisa ortografía, gramática, consistencia, estilo técnico, etc.
 
+Puedes personalizar sus reglas en un archivo vale.ini o usar guías predefinidas como:
 
+- Microsoft Writing Style Guide
 
+- Google Developer Style Guide
 
+- RedHat Style Guide
 
+⚙️ ¿Cómo funciona este pipeline?
 
+Este bloque YAML define un workflow en GitHub Actions:
 
+```
 
+on:
+  push:
+    branches:
+      - feature/dac
+  pull_request:
+    branches:
+      - feature/dac
 
 
+```
 
+🔄 Se ejecuta automáticamente cuando:
 
+- Haces push a la rama feature/dac.
 
+- Creas un Pull Request hacia esa misma rama.
 
+💼 Job vale – Qué hace paso a paso:
 
+```
 
+jobs:
+  vale:
+    name: Docs checker
+    runs-on: ubuntu-latest
 
+```
 
+1. Crea un job llamado Docs checker que se ejecuta en un entorno Ubuntu.
 
+```
 
+steps:
+  - uses: actions/checkout@v4
 
+```
 
+2. Clona el repositorio, para que tenga acceso a los archivos del proyecto.
 
+```
 
+- uses: errata-ai/vale-action@v2.1.1
+  with:
+    version: 3.12.0
+    files: docs
+    fail_on_error: true
+    filter_mode: nofilter
+    reporter: local
 
+```
 
+### 5. Publicación de documentación
 
+1. Acceda a su repositorio en Github y diríjase a la pestaña Settings. Posteriormente a la sección Pages. 
 
+En Settings >> Ir a la parte izquierda a Pages >> Build and Deployment >> Source >> Clic en Deploy from a batch.
 
+![image](./img/33.png)
 
+Se recarga la pestaña de Settings. En esta página habilite Github Pages [4] para el repositorio haciendo uso de la siguiente configuración:
 
+- Acceso Privado
+- Despliegue pasado en rama (seleccione main)
+- Seleccione la carpeta /docs
 
+2. Cambiar la pestaña de Code por Settings.
 
+![image](./img/34.png)
 
+3. Guarde sus cambios en la página.
 
+4. Suba sus cambios locales de git.
 
+Esta sección se enfoca en validar la calidad de la documentación usando Vale a través de un pipeline de GitHub Actions.
 
+Asegúrate de estar en la rama correcta: Debes trabajar en la rama feature/dac, ya que el pipeline solo se activa en esa rama.
 
+```
 
+git checkout feature/dac
 
+```
 
+<blockquote>
+<strong>⚠️ WARNING: </strong> Aclaración: La rama no existe localmente y remotamente.
 
+  error: ruta especificada 'feature/dac' no concordó con ningún archivo conocido por git
+  
+</blockquote>
 
+Para validar qué ramas hay:
 
+```
 
+git status
 
+```
 
+Ver si existe localmente:
 
+```
 
+git branch
 
+```
 
+Ver si existe remotamente:
 
+```
 
+git branch -r
 
+```
 
+Ver los archivos:
 
+```
 
+git ls-files
 
+```
 
+Por lo tanto, se debe de crear esta rama:
 
+```
 
+git checkout -b feature/dac
 
+```
 
+![image](./img/45.png)
 
+Está en la rama feature/dac, y Git ha detectado los archivos nuevos que se adicionaron a la carpeta docs/, pero todavía no los ha añadido al control de versiones.
 
+Agregar los archivos nuevos:
 
+```
 
+git status
+git add docs/
 
+```
 
+Esto agregará todos los archivos dentro de la carpeta docs/ al área de staging.
 
+Confirmar (commit) los cambios:
 
+```
+
+git commit -m "Add docs"
+
+```
+
+Subir la rama al repositorio remoto:
+
+```
+
+git push origin feature/dac
+
+```
+
+![image](./img/46.png)
+
+Esto:
+
+- Crea la rama feature/dac en GitHub.
+
+- Sube tu documentación.
+
+- Hará que el pipeline de Vale se ejecute automáticamente si todo está configurado correctamente.
+
+5. Cree un PR de su rama feature/dac a su rama main.
+
+<blockquote>
+<strong>⚠️ WARNING: </strong> Aclaración: ¿Qué es un PR?
+
+Un PR, o Pull Request, es una solicitud que haces en plataformas como GitHub, GitLab, o Bitbucket para proponer cambios hechos en una rama (como feature/dac) y pedir que se integren (fusionen) en otra rama (como main o develop).
+
+🧠 ¿Qué significa literalmente “Pull Request”?
+
+Estás diciendo: "Quiero que jales (pull) mis cambios desde esta rama hacia otra rama. Por favor, revísalos y apruébalos."
+
+🔁 Flujo básico de trabajo con Pull Requests
+
+- Creas una rama para trabajar (feature/dac).
+
+- Haces cambios en esa rama (documentación, código, etc.).
+
+- Subes la rama a GitHub.
+
+- Creas un PR hacia otra rama (main).
+
+- Se revisan los cambios (por ti o por otros).
+
+- Si todo está bien, se fusiona (merge).
+
+- ¡Listo! Los cambios ya están en la rama principal.
+
+| Término           | Significado simple                         |
+| ----------------- | ------------------------------------------ |
+| Pull Request (PR) | Propuesta de cambios para ser fusionados   |
+| Crear un PR       | Pedir revisión y aprobación de tus cambios |
+| Merge PR          | Aceptar y aplicar los cambios en otra rama |
+
+</blockquote>
+
+En Github posteriormente al hacer el push se vé así:
+
+![image](./img/35.png)
+
+Ir a la pestaña de Pull Request:
+
+![image](./img/36.png)
+
+Posteriormente, se abrirá la pantalla para crear el Pull Request.
+
+Aquí verás varias cosas importantes:
+
+| Campo       | Contenido                                                           |
+| ----------- | ------------------------------------------------------------------- |
+| **Base**    | `main` (es la rama de destino: dónde se van a fusionar los cambios) |
+| **Compare** | `feature/dac` (es la rama de origen: tus cambios actuales)          |
+
+Agrega un título y descripción
+
+Ejemplo:
+
+- Título: Project documentation.
+
+- Descripción: The README.md file is added with the architectural diagrams generated with PlantUML.
+
+![image](./img/37.png)
+
+Haz clic en "Create Pull Request". Esto no fusiona los cambios todavía, solo crea la solicitud para que se revise.
+
+<blockquote>
+<strong>⚠️ WARNING: </strong> Aclaración: ¿Qué es un PR?¿Qué pasa después de crear el PR?
+
+GitHub ejecutará automáticamente el pipeline de CI
+
+    - Se lanzará el job Docs checker con la herramienta Vale
+
+    - Revisa los archivos .md en la carpeta docs/
+
+    - Si detecta errores de estilo, el job fallará ❌
+
+Verás los resultados en la pestaña “Checks” o directamente en el PR
+
+    - Si todo está bien: aparecerá un check verde (✔) y el PR podrá ser fusionado
+
+    - Si hay errores: GitHub mostrará los detalles para que los corrijas
+
+</blockquote>
+
+Lo primero que podrá observar es que el pipeline de CI con el paso de Vale se ejecuta, verifique que pasa satisfactoriamente:
+
+![image](./img/38.png)
+
+¿Qué significa ese mensaje?
+
+✅ "All checks have passed"
+
+Todos los procesos automáticos (en este caso, el pipeline con Vale) se ejecutaron y terminaron exitosamente. No hay errores en tu documentación.
+
+✅ "No conflicts with base branch"
+
+Tus cambios en la rama feature/dac no entran en conflicto con lo que hay actualmente en main, así que pueden fusionarse sin problema.
+
+Haz clic en "Merge pull request": Esto va a integrar tus cambios en la rama main.
+
+Después de hacer clic, aparecerá un botón que dice: Confirma el merge.
+
+![image](./img/39.png)
+
+![image](./img/40.png)
+
+6. Verificar que se ha ejecutado el proceso de github pages
+
+Una vez finalizado el merge a la rama main. Diríjase a la sección de Actions y verifique que el proceso de github pages ha iniciado su ejecución.
+
+![image](./img/41.png)
+
+Al ingresar al workflow podrá encontrar la url de la página donde se publicará su documentación (también la encuentra en la sección de github pages):
+
+![image](./img/42.png)
+
+![image](./img/43.png)
+
+Abra la [URL](https://redesigned-adventure-8jmmolk.pages.github.io/) en su navegador y verá la página de su documentación:
+
+![image](./img/44.png)
+
+Posteriormente, se borra la rama feature/dac.
+
+Antes de borrar una rama local, debes cambiarte (checkout) a otra rama, como main.
+
+```
+
+git status
+
+git checkout main
+
+```
+
+Se traen los cambios remotos a local:
+
+```
+
+git pull origin main
+
+```
+
+![image](./img/67.png)
+
+Borrar la rama localmente:
+
+```
+
+git branch -d feature/dac
+
+```
+
+![image](./img/68.png)
+
+Borrar la rama del repositorio remoto:
+
+```
+
+git push origin --delete feature/dac
+
+```
+
+Este es el final del tutorial, en este punto usted ya sabe cómo gestionar su documentación técnica haciendo uso de los procesos y herramientas de desarrollo que ya conoce y algunas nuevas.
+
+Esperamos que sea de gran utilidad. Nos vemos en el siguiente tutorial.
+
+### 6. Referencias
+
+[1] «Documentation as Code», [Online]. Disponible en:https://www.writethedocs.org/guide/docs-as-code/
+
+[2] «PlantUML», [Online]. Disponible en:https://plantuml.com/
+
+[3] «Documentación de Vale». [Online]. Disponible en:https://vale.sh/
+
+[4] «Github Pages». [Online]. Disponible en: https://pages.github.com/
+
+### 7. Tutorial
+
+![image](./img/47.png)
+
+![image](./img/48.png)
+
+![image](./img/49.png)
+
+![image](./img/50.png)
+
+![image](./img/51.png)
+
+![image](./img/52.png)
+
+![image](./img/53.png)
+
+![image](./img/54.png)
+
+![image](./img/55.png)
+
+![image](./img/56.png)
+
+![image](./img/57.png)
+
+![image](./img/58.png)
+
+![image](./img/59.png)
+
+![image](./img/60.png)
+
+![image](./img/61.png)
+
+![image](./img/62.png)
+
+![image](./img/63.png)
+
+![image](./img/64.png)
+
+![image](./img/65.png)
+
+![image](./img/66.png)
 
 
 
