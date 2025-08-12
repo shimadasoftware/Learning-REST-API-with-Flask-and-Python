@@ -4,6 +4,7 @@ Los temas a ver son:
 
 - Introducción a Flask API
 - Instalación de Flask API
+- Primer Ejercicio: Aprender lo básico
 
 
 ## 1. Introducción a Flask API 🙋🏻‍♀️
@@ -508,6 +509,281 @@ pip install Flask
 ```
 
 ![image](./img/1.png)
+
+8. Verificar las herramientas
+
+```
+pip list
+```
+
+![image](./img/2.png)
+
+9. Desactivar entorno virtual
+
+```
+deactivate
+```
+
+![image](./img/3.png)
+
+
+---
+
+
+## 3. Primer Ejercicio: Aprender lo básico 🙋🏻‍♀️
+
+- Hola Mundo
+- Activar Modo Depurador
+- Rutas y Vistas
+- Variables en rutas
+- Escape de HTML
+- Plantillas con Jinja y HTML
+- Creación de plantillas
+- Uso de variables y bucles 
+- Herencia de plantillas
+- Uso de filtros y funciones 
+- Enviar datos a las plantillas
+- Enlaces y rutas 
+- Archivos estáticos 
+- Manejo de formulario 
+- Crear formulario 
+- Validación de datos 
+- Formulario con WTForm
+- Validación de datos con WTForm
+- Final
+
+### Hola Mundo
+
+1. Abrir Visual Studio Code
+
+```
+code .
+```
+
+2. Crear el archivo .py por fuera del ambiente virtual:
+
+```
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'Hello World'
+```
+
+__name__ indica que el archivo (modulo) es la aplicación de Flask.
+
+Cada Route representa una vista y está relacionado a una función.
+
+![image](./img/5.png)
+
+![image](./img/4.png)
+
+3. Ejecutar la aplicación
+
+```
+cd exercises/
+flask --app app1 run
+
+Url: http://127.0.0.1:5000
+```
+
+![image](./img/6.png)
+
+![image](./img/7.png)
+
+### Activar Modo Depurador
+
+Para activar modo depurador modificar el comando:
+
+```
+flask --app app1 --debug run
+```
+
+![image](./img/8.png)
+
+![image](./img/9.png)
+
+![image](./img/10.png)
+
+### Rutas y Vistas
+
+1. Cada ruta debe ser única. Dos funciones no pueden tener la misma ruta o por defecto tomará la asociación de la primera función que encuentre.
+
+![image](./img/11.png)
+
+![image](./img/12.png)
+
+![image](./img/13.png)
+
+2. También se pueden retornar diferentes elementos:
+
+![image](./img/14.png)
+
+![image](./img/15.png)
+
+3. Una función puede tener más de una ruta:
+
+![image](./img/16.png)
+
+![image](./img/17.png)
+
+### Variables en rutas
+
+Se puede añadir variables de esta forma:
+
+![image](./img/18.png)
+
+![image](./img/19.png)
+
+![image](./img/20.png)
+
+![image](./img/21.png)
+
+Se puede especificar el dato que se desea recibir por la ruta: string, int, float, path, uuid, etc.
+
+![image](./img/22.png)
+
+También, se pueden recibir varios valores:
+
+![image](./img/23.png)
+
+![image](./img/24.png)
+
+Ejemplo para manejar varias rutas:
+
+![image](./img/25.png)
+
+![image](./img/26.png)
+
+![image](./img/27.png)
+
+![image](./img/28.png)
+
+### Escape de HTML
+
+Flask recomienda escapar las entradas.
+
+Código:
+
+```
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+@app.route('/index')
+def index():
+    return '<h1>Index Page</h1>'
+
+
+# Obtener valores: string, int, float, path, uuid.
+@app.route('/hello')
+@app.route('/hello/<string:name>')
+@app.route('/hello/<string:name>/<int:age>')
+def hello(name = None, age = None):
+    if name is None and age is None:
+        return f'<h1>Hello World</h1>' 
+    elif age is None:
+        return f'<h1>Hello, {name}</h1>'
+    else:
+        return f'<h1>Hello, {name}. Your age is: {age}</h1>'
+
+@app.route('/code/<path:code>')
+def code(code):
+    return f'<code>{code}</code>' 
+```
+
+![image](./img/29.png)
+
+![image](./img/30.png)
+
+```
+http://127.0.0.1:5000/code/<script>alert("¡Alerta");</script>
+```
+
+```
+from markupsafe import escape
+
+@app.route('/code/<path:code>')
+def code(code):
+    return f'<code>{escape(code)}</code>' 
+```
+
+![image](./img/31.png)
+
+![image](./img/32.png)
+
+El escape es util para prevenir ataque de inyecciones al código. El escape convierte el código por ejemplo, de javascript a un texto plano. Por defecto la vista de Flask devuelve una vista en HTML.
+
+### Plantillas con Jinja y HTML
+
+Jinja2 es un motor de plantillas para Python que permite crear plantillas dinámicas y generar contenido HTML, XML, etc con datos en tiempo de ejecución.
+
+
+### Creación de plantillas
+
+
+
+### Uso de variables y bucles 
+
+
+
+### Herencia de plantillas
+
+
+
+### Uso de filtros y funciones 
+
+
+
+### Enviar datos a las plantillas
+
+
+
+### Enlaces y rutas 
+
+
+
+### Archivos estáticos 
+
+
+
+### Manejo de formulario 
+
+
+
+### Crear formulario 
+
+
+
+### Validación de datos 
+
+
+
+### Formulario con WTForm
+
+
+
+### Validación de datos con WTForm
+
+
+
+### Final
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
