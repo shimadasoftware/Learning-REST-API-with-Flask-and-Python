@@ -65,11 +65,13 @@ Es un archivo de texto que define los pasos para construir una imagen Docker.
 🔹 Estructura básica:
 
 Usa una imagen base (ej: Ubuntu)
+
 ```
 FROM ubuntu:latest
 ```
 
 Actualiza e instala dependencias
+
 ```
 RUN apt-get update && apt-get install -y python3
 ```
@@ -263,6 +265,7 @@ Herramienta ligera que implementa el estándar OCI (Open Container Initiative).
 Crea y ejecuta contenedores según las especificaciones de OCI.
 
 📌 Flujo de ejecución de un contenedor:
+
 docker run → Docker Daemon → containerd → runC → Contenedor en ejecución.
 
 ---
@@ -278,9 +281,7 @@ A continuación se realiza la instalación de Docker en Linux con distribución 
 **1.1 Configurar el repositorio de paquetes de Docker:**
 
 ```
-
 sudo dnf install -y dnf-plugins-core
-
 ```
 
 ![image](./img/1%20instalar%20plugins.png)
@@ -288,9 +289,7 @@ sudo dnf install -y dnf-plugins-core
 **1.2: Agregar el repositorio oficial de Docker:**
 
 ```
-
 sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-
 ```
 
 ![image](./img/2%20error.png)
@@ -302,7 +301,6 @@ sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/dock
 - Ejecutar este comando para crear el archivo de configuración del repositorio:
 
 ```
-
 sudo tee /etc/yum.repos.d/docker-ce.repo << 'EOF'
 [docker-ce-stable]
 name=Docker CE Stable - \$basearch
@@ -311,7 +309,6 @@ enabled=1
 gpgcheck=1
 gpgkey=https://download.docker.com/linux/fedora/gpg
 EOF
-
 ```
 
 ¿Qué hace este comando?
@@ -325,9 +322,7 @@ Verifica firmas GPG (gpgcheck=1).
 - Actualizar la caché de paquetes
 
 ```
-
 sudo dnf makecache
-
 ```
 
 - Verificar que el archivo existe
@@ -335,9 +330,7 @@ sudo dnf makecache
 Ejecuta este comando para comprobar si el archivo del repositorio (docker-ce.repo) está en la ubicación correcta:
 
 ```
-
 ls -l /etc/yum.repos.d/docker-ce.repo
-
 ```
 
 Si existe, verás algo como: -rw-r--r--. 1 root root 320 [fecha] /etc/yum.repos.d/docker-ce.repo
@@ -347,22 +340,18 @@ Si existe, verás algo como: -rw-r--r--. 1 root root 320 [fecha] /etc/yum.repos.
 Para asegurarte de que el contenido del archivo es correcto:
 
 ```
-
 cat /etc/yum.repos.d/docker-ce.repo
-
 ```
 
 Debe mostrar algo similar a esto:
 
 ```
-
 [docker-ce-stable]
 name=Docker CE Stable - $basearch
 baseurl=https://download.docker.com/linux/fedora/$releasever/$basearch/stable
 enabled=1
 gpgcheck=1
 gpgkey=https://download.docker.com/linux/fedora/gpg
-
 ```
 
 - Verificar que el repositorio está activo en DNF
@@ -370,17 +359,13 @@ gpgkey=https://download.docker.com/linux/fedora/gpg
 Comprueba si Docker aparece en la lista de repositorios disponibles:
 
 ```
-
 sudo dnf repolist | grep -i docker
-
 ```
 
 Si está correctamente agregado, verás:
 
 ```
-
 docker-ce-stable      Docker CE Stable - x86_64
-
 ```
 
 ![image](./img/2%20Agregar%20el%20repositorio%20oficial%20de%20docker.png)
@@ -391,10 +376,7 @@ docker-ce-stable      Docker CE Stable - x86_64
 Instala Docker Engine, containerd y Docker Compose:
 
 ```
-
 sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-
 ```
 
 ![image](./img/3%20instalar%20docker%20engine.png)
@@ -412,17 +394,13 @@ Este comando instala Docker, pero no lo inicia. También crea un grupo de Docker
 Habilita Docker para que se inicie automáticamente al arrancar el sistema y luego inicia el servicio:
 
 ```
-
 sudo systemctl enable --now docker
-
 ```
 
 Salida:
 
 ```
-
 Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
-
 ```
 
 ![image](./img/4%20iniciar%20docker.png)
@@ -432,9 +410,7 @@ Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /
 </blockquote>
 
 ```
-
 systemctl status docker
-
 ```
 
 ● docker.service - Docker Application Container Engine
@@ -462,9 +438,7 @@ Active: active (running) → Docker está funcionando.
 Comprueba que Docker se ha instalado correctamente ejecutando el contenedor de prueba "hello-world":
 
 ```
-
 sudo docker run hello-world
-
 ```
 
 ![image](./img/5%20probar%20docker.png)
@@ -482,7 +456,6 @@ sudo docker run hello-world
 cd Descargas/
 
 sudo dnf install ./docker-desktop-x86_64.rpm
-
 ```
 
 ![image](./img/6%20instalar%20docker%20deskstop.png)
@@ -496,9 +469,7 @@ DNF instalará automáticamente las dependencias requeridas (ej. containerd, doc
 Buscar "Docker Desktop" en el menú de aplicaciones (GUI) o Iniciar desde terminal:
 
 ```
-
 systemctl --user start docker-desktop
-
 ```
 
 ![image](./img/7%20lanzar%20docker%20desktop.png)
@@ -551,7 +522,6 @@ Server: Docker Desktop 4.43.2 (199162)
  docker-init:
   Version:          0.19.0
   GitCommit:        de40ad0
-
 ```
 
 ![image](./img/9%20versions.png)
@@ -609,9 +579,7 @@ sudo docker image ls
 El comando run crea un contenedor a partir de una imagen. El servidor de apache se ejecuta en el puerto 80 como indica la documentación:
 
 ```
-
 sudo docker run -p 8080:80 httpd
-
 ```
 
 ![image](./img/14.png)
@@ -629,9 +597,7 @@ No obstante, al terminar el proceso en terminal, el contenedor se detiene. Esto 
 El siguiente comando permite un servicio persistente:
 
 ```
-
 sudo docker run -d -p 8080:80 --name mi-apache httpd
-
 ```
 
 ![image](./img/12.png)
@@ -647,9 +613,7 @@ Qué hace:
 Para detener el contenedor, se puede usar el comando mediante el nombre del contenedor:
 
 ```
-
 sudo docker stop mi-apache
-
 ```
 
 4. Realizar el ejercicio con [nginx](https://hub.docker.com/_/nginx).
@@ -657,9 +621,7 @@ sudo docker stop mi-apache
 Si no está descargada la imagen con el comando pull, el comando run realiza la descarga de la imagen y la ejecución del contenedor.
 
 ```
-
 sudo docker run -p 8080:80 nginx
-
 ```
 
 ![image](./img/16.png)
@@ -669,11 +631,9 @@ sudo docker run -p 8080:80 nginx
 5. Para verificar qué contenedores existen y están activos:
 
 ```
-
 sudo docker container ls
 
 sudo docker container ls -a
-
 ```
 
 Diferencias:
@@ -686,18 +646,14 @@ Diferencias:
 6. Para volver a iniciar el contenedor:
 
 ```
-
 sudo docker start mi-apache
-
 ```
 ![image](./img/19.png)
 
 7. Para inspeccionar un contenedor se puede usar el ID o el nombre:
 
 ```
-
 sudo docker container inspect 3019d4813cb9
-
 ```
 
 ![image](./img/20.png)
@@ -705,10 +661,8 @@ sudo docker container inspect 3019d4813cb9
 8. Para eliminar los contenedores hay que tener presente que deben de estar detenidos.
 
 ```
-
 sudo docker stop 3019d4813cb9
 sudo docker container rm 3019d4813cb9
-
 ```
 
 ![image](./img/21.png)
@@ -717,9 +671,7 @@ sudo docker container rm 3019d4813cb9
 9. Para remover todos los contenedores detenidos:
 
 ```
-
 sudo docker container prune
-
 ```
 
 ![image](./img/22.png)
@@ -730,10 +682,8 @@ sudo docker container prune
 El modo interactivo permite acceder a la terminal del contenedor.
 
 ```
-
 sudo docker exec 84f35778bfa4 ls
 sudo docker exec -it 84f35778bfa4 bash
-
 ```
 
 ![image](./img/23.png)
@@ -747,18 +697,14 @@ sudo docker exec -it 84f35778bfa4 bash
 Como se vió anteriormente -p permite establecer el puerto.
 
 ```
-
 sudo docker run -d -p 8080:80 --name mi-apache httpd
-
 ```
 
 También, se puede usar -P para asignar un puerto aleatoriamente.
 
 ```
-
 sudo docker run -d -P httpd
 sudo docker container port 0a836423c35a
-
 ```
 
 ![image](./img/25.png)
@@ -773,9 +719,7 @@ Los logs permite hacer una trasavilidad de los errores o warnings del contenedor
 ![image](./img/27.png)
 
 ```
-
 sudo docker logs 3b13bc012c47
-
 ```
 
 ![image](./img/28.png)
@@ -783,9 +727,7 @@ sudo docker logs 3b13bc012c47
 Para que se actualice la terminal con los logs en tiempo real:
 
 ```
-
 sudo docker logs -f 3b13bc012c47
-
 ```
 
 ![image](./img/29.png)
@@ -796,9 +738,7 @@ sudo docker logs -f 3b13bc012c47
 ![image](./img/30.png)
 
 ```
-
 sudo docker run -d -p 3309:3306 -e MYSQL_ROOT_PASSWORD=mypass -e MYSQL_DATABASE=my_database mysql:oraclelinux9
-
 ```
 
 ![image](./img/31.png)
@@ -814,11 +754,9 @@ Tampoco aparece un error con logs.
 Por lo tanto, para permitir que se ejecute se utiliza -d -i -t o se puede unificar -dit:
 
 ```
-
 sudo docker run -d -i -t ubuntu:rolling
 
 sudo docker run -dit ubuntu:rolling
-
 ```
 
 ![image](./img/35.png)
@@ -854,29 +792,23 @@ Hay dos tipos de volúmenes:
 ### Sección 2: Vólumenes de Docker
 
 ```
-
 sudo docker
-
 ```
 
 ![image](./img/36.png)
 
 ```
-
 sudo docker volume
 
 sudo docker volume ls
-
 ```
 
 ![image](./img/37.png)
 
 ```
-
 sudo docker volume create docker-my-volume
 
 sudo docker volume inspect docker-my-volume
-
 ```
 
 ![image](./img/38.png)
@@ -884,17 +816,13 @@ sudo docker volume inspect docker-my-volume
 Para poder ejecutar el volumen y teniendo en cuenta la guía de Docker para MySQL:
 
 ```
-
 $ docker run --name some-mysql -v /my/own/datadir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
-
 ```
 
 A continuación, se adapata el comando:
 
 ```
-
 sudo docker run -d --name mysql-volume -v docker-my-volume:/var/lib/mysql -p 3311:3306 -e MYSQL_ROOT_PASSWORD=mypass mysql:oraclelinux9
-
 ```
 
 ![image](./img/39.png)
@@ -913,9 +841,7 @@ A continuación, se realiza un ejemplo con un archivo txt, para verificar que lo
 Los volúmenes permiten compartir archivos entre contenedores. Para ello se va a utilizar la imagen de Ubuntu y se guarda en docker-my-volume:
 
 ```
-
 sudo docker run -dit -v docker-my-volume:/docker-my-volume --name ubuntu-volume ubuntu:rolling
-
 ```
 
 ![image](./img/42.png)
@@ -923,9 +849,7 @@ sudo docker run -dit -v docker-my-volume:/docker-my-volume --name ubuntu-volume 
 Se crea un archivo para el volumen docker-my-volume desde el contenedor de ubuntu:rolling, para poder observar si en el volumen de mysql también se crea. 
 
 ```
-
 touch iminubuntu.txt
-
 ```
 
 ![image](./img/43.png)
@@ -938,15 +862,12 @@ touch iminubuntu.txt
 La ruta local:
 
 ```
-
 /home/juana/Documentos/master_degree/semester4/1/docker
-
 ```
 
 ![image](./img/45.png)
 
 ```
-
 sudo docker run -dit -v /home/juana/Documentos/master_degree/semester4/1/docker:/docker-my-volume ubuntu:rolling 
 ```
 
@@ -999,9 +920,7 @@ Ejemplo de Bridge:
 Para crear una red por defecto bridge:
 
 ```
-
 sudo docker network create docker-network
-
 ```
 
 ![image](./img/53.png)
@@ -1013,18 +932,14 @@ sudo docker network create docker-network
 Para contectar el contendor a la red:
 
 ```
-
 docker run --help
-
 ```
 
 ![image](./img/56.png)
 
 
 ```
-
 sudo docker run -dit --network docker-network ubuntu:rolling
-
 ```
 
 ![image](./img/57.png)
@@ -1033,9 +948,7 @@ sudo docker run -dit --network docker-network ubuntu:rolling
 
 
 ```
-
 sudo docker run -dit --name ubuntu-network --network docker-network ubuntu:rolling
-
 ```
 
 ![image](./img/59.png)
@@ -1069,7 +982,6 @@ sudo docker inspect fec09cc9a553
                         "fec09cc9a553"
                     ]
                 }
-
 ```
 
 El contenedor ubuntu-network que se acaba de conectar a la red, termina en 3.
@@ -1100,13 +1012,11 @@ sudo docker inspect 8f5fd78737c8
                     ]
                 }
             }
-
 ```
 
 Se realiza un ping para cada una:
 
 ```
-
 sudo docker exec -it 8f5fd78737c8 bash
 apt-get update
 apt-get install iputils-ping -y
@@ -1142,7 +1052,6 @@ PING 172.18.0.2 (172.18.0.2) 56(84) bytes of data.
 --- 172.18.0.2 ping statistics ---
 7 packets transmitted, 7 received, 0% packet loss, time 6150ms
 rtt min/avg/max/mdev = 0.089/0.114/0.175/0.027 ms
-
 ```
 
 También se puede hacer ping por el nombre del contenedor:
@@ -1162,7 +1071,6 @@ rtt min/avg/max/mdev = 0.082/0.105/0.126/0.018 ms
 Otra:
 
 ```
-
 sudo docker exec -it fec09cc9a553 bash
 apt-get update
 apt-get install iputils-ping -y
@@ -1194,7 +1102,6 @@ PING 172.18.0.3 (172.18.0.3) 56(84) bytes of data.
 --- 172.18.0.3 ping statistics ---
 3 packets transmitted, 3 received, 0% packet loss, time 2062ms
 rtt min/avg/max/mdev = 0.110/0.123/0.144/0.014 ms
-
 ```
 
 ---
@@ -1249,21 +1156,17 @@ A continuación, se construye el archivo:
 Ahora se compila el archivo, al final hay que poner la ruta dónde se encuentra el docker file.
 
 ```
-
 sudo docker build --help
 
 sudo docker build -t ubuntu-with-python ./
-
 ```
 
 ![image](./img/62.png)
 
 ```
-
 sudo docker image ls
 
 sudo docker run -it ubuntu-with-python
-
 ```
 
 ![image](./img/63.png)
@@ -1283,7 +1186,6 @@ Si el destino no existe, se crea automáticamente.
 Dockerfile:
 
 ```
-
 FROM ubuntu:rolling
 
 RUN apt-get update && apt-get install -y \
@@ -1294,14 +1196,11 @@ RUN apt-get update && apt-get install -y \
 COPY . /app
 
 WORKDIR /app
-
 ```
 
 ```
-
 sudo docker build -t ubuntu-with-python:v2 ./
 sudo docker run -it ubuntu-with-python:v2
-
 ```
 
 ### Sección 4: Variables de Entorno
@@ -1311,7 +1210,6 @@ Los valores de las varianles de entorno que se asignan desde el docker file son 
 * ENV: Define variables de entorno persistentes dentro del contenedor.
 
 ```
-
 FROM ubuntu:rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -1325,7 +1223,6 @@ RUN apt-get update && apt-get install -y \
 COPY . /app
 
 WORKDIR /app
-
 ```
 
 ![image](./img/65.png)
@@ -1335,7 +1232,6 @@ Los argumentos de construcción permiten modificar el comportamiento de la image
 * ARG: Variables temporales solo durante el build (no persisten en el contenedor final).
 
 ```
-
 FROM ubuntu:rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -1352,15 +1248,12 @@ RUN apt-get update && apt-get install -y \
 COPY . /app
 
 WORKDIR /app
-
 ```
 
 ![image](./img/66.png)
 
 ```
-
 sudo docker build -t ubuntu-with-python:v4 --build-arg="TEXT_EDITOR=vim" ./
-
 ```
 
 ![image](./img/67.png)
@@ -1387,17 +1280,14 @@ Puede ser sobrescrito al ejecutar el contenedor con docker run <imagen> <nuevo-c
 ![image](./img/68.png)
 
 ```
-
 sudo docker build -t ubuntu-with-python:v5 ./
 
 sudo docker run -it ubuntu-with-python:v5
-
 ```
 
 ![image](./img/69.png)
 
 ```
-
 sudo docker ps
 
 sudo docker run -d -p 8082:80 ubuntu-with-python:v5
@@ -1405,7 +1295,6 @@ sudo docker run -d -p 8082:80 ubuntu-with-python:v5
 curl localhost:8082
 
 sudo docker inspect 89f39976e9e8
-
 ```
 
 ![image](./img/70.png)
@@ -1424,7 +1313,6 @@ El comando cmd puede ser sobrescrito al ejecutar el contenedor con docker run <i
 ![image](./img/74.png)
 
 ```
-
 sudo docker stop 37fa188d349e
 
 sudo docker run -d -p 8082:80 ubuntu-with-python:v5 ls -al
@@ -1434,14 +1322,12 @@ sudo docker logs a720a992f735
 sudo docker ps -a
 
 sudo docker logs 6542876e94bc
-
 ```
 Para evitar que el comando pueda ser reemplazado se utiliza:
 
 * ENTRYPOINT → Define el ejecutable principal que se ejecutará cuando el contenedor inicie. 
 
 ```
-
 FROM ubuntu:rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -1462,17 +1348,15 @@ WORKDIR /app
 #CMD ["nginx", "-g", "daemon off;"]
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
-
 ```
 
 ```
-
 sudo docker ps
 sudo docker build -t ubuntu-with-python:v6 ./
 sudo docker run -d -p 8082:80 ubuntu-with-python:v6
 sudo docker run -d -p 8082:80 ubuntu-with-python:v6 ls -la
-
 ```
+
 ![image](./img/75.png)
 
 | Característica                                      | `CMD`                                       | `ENTRYPOINT`                              |
@@ -1496,7 +1380,6 @@ Se utilizan los archivos de:
 ![image](./img/79.png)
 
 ```
-
 sudo docker build -t ubuntu-with-python:v7 ./
 
 sudo docker run -d -p 8082:80 ubuntu-with-python:v7
@@ -1506,7 +1389,6 @@ sudo docker ps -a
 sudo docker logs df6f2ffcb9e9
 
 sudo docker run -p 8082:80 ubuntu-with-python:v7
-
 ```
 
 ![image](./img/76.png)
@@ -1524,9 +1406,7 @@ Crea un repositorio:
 Posteriormente, ingresar desde la terminal.
 
 ```
-
 sudo docker login
-
 ```
 
 ![image](./img/83.png)
@@ -1538,13 +1418,11 @@ sudo docker login
 ![image](./img/86.png)
 
 ```
-
 sudo docker image tag ubuntu-with-python juanavmendozas/ubuntu-example:v7
 
 sudo docker push
 
 sudo docker push juanavmendozas/ubuntu-example:v7
-
 ```
 
 Posteriormente, se hace tag al contendor que se desea subir.
@@ -1585,11 +1463,9 @@ Archivo entrypoint.sh:
 Para evitar que más adelante se presente un error cuando instala node desde el dockerfile, se debe de incluir el archivo package.json e instalar node:
 
 ```
-
 sudo dnf install nodejs npm
 
 npm install
-
 ```
 
 ![image](./img/98.png)
@@ -1609,11 +1485,9 @@ Si se llega a tener un archivo que se desea ignorar, como podría ser ya tener e
 ![image](./img/103.png)
 
 ```
-
 sudo docker build -t ubuntu-with-node:v1 ./
 
 sudo docker run -d -p 3000:3000 ubuntu-with-node:v1
-
 ```
 
 
@@ -1635,20 +1509,21 @@ sudo docker run -d -p 3000:3000 ubuntu-with-node:v1
 Docker recomienda que se debe de manejar un servicio por contenedor, pero en la realidad se necesitan muchos servicios. Por eso se utiliza Docker Composer que es un Orquestador local que permite trabajar con aplicaciones múltiples contenedores, mediante un archivo de configuración.
 
 Docker Compose es una herramienta para definir y ejecutar aplicaciones multi-contenedor usando un archivo YAML. Permite:
-✅ Orquestrar múltiples servicios (bases de datos, backends, frontends) en un solo comando.
-✅ Gestionar redes, volúmenes y variables de entorno centralizadamente.
-✅ Simplificar el desarrollo y despliegue de aplicaciones complejas.
+
+* ✅ Orquestrar múltiples servicios (bases de datos, backends, frontends) en un solo comando.
+
+* ✅ Gestionar redes, volúmenes y variables de entorno centralizadamente.
+
+* ✅ Simplificar el desarrollo y despliegue de aplicaciones complejas.
 
 ### Sección 2: Servicios
 
 Verificar que esté instalado Docker Compose:
 
 ```
-
 docker compose version
 
 docker compose --help
-
 ```
 
 ![image](./img/104.png)
@@ -1658,9 +1533,7 @@ docker compose --help
 Para crear e iniciar los contenedores usar:
 
 ```
-
 sudo docker compose up
-
 ```
 
 ![image](./img/106.png)
@@ -1668,11 +1541,9 @@ sudo docker compose up
 Fedora incluye Docker Compose v2 como parte de Docker Engine (por eso docker compose funciona).
 
 ```
-
 sudo docker compose up -d
 sudo docker compose ps
 sudo docker compose ls
-
 ```
 
 ![image](./img/107.png)
@@ -1680,11 +1551,9 @@ sudo docker compose ls
 El docker-compose crea una red y agrega todos los contenedores a esa red.
 
 ```
-
 sudo docker network ls
 
 sudo docker inspect ubuntu
-
 ```
 
 ![image](./img/108.png)
@@ -1694,9 +1563,7 @@ sudo docker inspect ubuntu
 Para eliminar el contendor y la red creada:
 
 ```
-
 sudo docker compose down
-
 ```
 
 ![image](./img/110.png)
@@ -1704,9 +1571,7 @@ sudo docker compose down
 Si se cambian los parámetros docker compose recrea el contenedor, pero la red permanece igual:
 
 ```
-
 sudo docker compose down
-
 ```
 
 ![image](./img/112.png)
@@ -1739,8 +1604,6 @@ services:
   redis:
     image: redis
     container_name: redis
-
-
 ```
 
 ![image](./img/114.png)
@@ -1764,8 +1627,6 @@ services:
   redis:
     image: redis
     container_name: redis
-
-
 ```
 
 ![image](./img/114.png)
@@ -1806,7 +1667,6 @@ Previamente estaba creada la red:
 8e6dc43cc636   docker-network
 
 ```
-
 services:
   ubuntu:
     image: ubuntu
@@ -1831,7 +1691,6 @@ services:
 networks:
   docker-network:
     external: true
-
 ```
 
 ![image](./img/118.png)
@@ -1851,7 +1710,6 @@ Previamente vimos que los volúmenes permiten persisir la información:
 sudo docker volume ls
 
 sudo docker volume create ubuntu-volume-example
-
 ```
 
 ![image](./img/121.png)
@@ -1879,9 +1737,7 @@ El contenedor de MySQL como se vió previamente necesita de una variable de ento
 
 ![image](./img/127.png)
 
-
 ```
-
 services:
   ubuntu:
     image: ubuntu
@@ -1922,7 +1778,6 @@ volumes:
 networks:
   docker-network:
     external: true
-
 ```
 
 ![image](./img/128.png)
@@ -1936,15 +1791,12 @@ No obstante, por temas de seguridad y probablemente se comparta el archivo docke
 ![image](./img/130.png)
 
 ```
-
 MYSQL_ROOT_PASSWORD=12345
-
 ```
 
 ![image](./img/131.png)
 
 ```
-
 services:
   ubuntu:
     image: ubuntu
@@ -1985,7 +1837,6 @@ volumes:
 networks:
   docker-network:
     external: true
-
 ```
 
 ### Sección 6: Stack Local
@@ -2002,7 +1853,6 @@ El PMA_HOST es mysql y el puerto 8085:80.
 ![image](./img/136.png)
 
 ```
-
 services:
   python:
     image: python
@@ -2037,7 +1887,6 @@ services:
 
 volumes:
   db-data:
-
 ```
 
 ![image](./img/135.png)
@@ -2051,12 +1900,9 @@ volumes:
 En el contenedor de Python dentro de la carpeta scripts se encuentran todos los archivos:
 
 ```
-
 sudo docker compose ps
 
 sudo docker compose exec -it python bash
-
-
 ```
 
 ![image](./img/140.png)
@@ -2110,10 +1956,14 @@ Orquestadores de Contenedores (Kubernetes, Docker Swarm, Mesos)
 Herramientas para gestionar clústeres de contenedores en múltiples servidores, ideal para entornos de producción complejos.
 
 Características:
-✅ Escalabilidad horizontal: Distribuye contenedores en varios nodos.
-✅ Alta disponibilidad: Recuperación automática de fallos.
-✅ Balanceo de carga: Distribuye tráfico entre instancias.
-✅ Gestión de redes avanzada: Comunicación entre contenedores en distintos hosts.
+
+* ✅ Escalabilidad horizontal: Distribuye contenedores en varios nodos.
+
+* ✅ Alta disponibilidad: Recuperación automática de fallos.
+
+* ✅ Balanceo de carga: Distribuye tráfico entre instancias.
+
+* ✅ Gestión de redes avanzada: Comunicación entre contenedores en distintos hosts.
 
 Los contenedores Docker son como cajas mágicas que guardan tus aplicaciones. Los orquestadores son como directores de orquesta que coordinan miles de estas cajas para que trabajen juntas sin problemas. 
 
@@ -2152,10 +2002,8 @@ El más simple. Como un "equipo de repartidores" de Docker:
 - Redes: Conexiones privadas entre contenedores.
 
 ```
-
 docker swarm init  # Convierte tu PC en el jefe
 docker service create --replicas 3 --name panaderos bakery-image  # 3 contenedores idénticos
-
 ```
 
 3. Apache Mesos
@@ -2201,11 +2049,11 @@ El conjunto de servidores de máquinas virtuales para que una aplicación funcio
 
 Es una plataforma open-source que:
 
-✅ Automatiza el despliegue, escalado y gestión de aplicaciones en contenedores.
+* ✅ Automatiza el despliegue, escalado y gestión de aplicaciones en contenedores.
 
-✅ Garantiza alta disponibilidad (que tu app no se caiga).
+* ✅ Garantiza alta disponibilidad (que tu app no se caiga).
 
-✅ Distribuye cargas de trabajo en múltiples servidores (nodos).
+* ✅ Distribuye cargas de trabajo en múltiples servidores (nodos).
 
 Ejemplo:
 
@@ -2294,11 +2142,11 @@ Para utilizar Kubernets de forma local se puede hacer mediante: [Minikube](https
 
 Minikube es una herramienta que permite ejecutar un clúster de Kubernetes de un solo nodo en tu computadora local. Es ideal para:
 
-✅ Aprender Kubernetes sin necesidad de infraestructura compleja.
+* ✅ Aprender Kubernetes sin necesidad de infraestructura compleja.
 
-✅ Desarrollar y probar aplicaciones antes de llevarlas a producción.
+* ✅ Desarrollar y probar aplicaciones antes de llevarlas a producción.
 
-✅ Experimentar con despliegues, pods y servicios en un entorno controlado.
+* ✅ Experimentar con despliegues, pods y servicios en un entorno controlado.
 
 | Término   | ¿Qué es?                                                                 | ¿Para qué sirve?                                                        |
 |-----------|-------------------------------------------------------------------------|---------------------------------------------------------------------------|
@@ -2311,7 +2159,6 @@ Primero se deben de instalar las dependencias
 Necesitas Docker (o Podman) y kubectl antes de Minikube:
 
 ```
-
 # Descargar kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 
@@ -2322,7 +2169,6 @@ echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check  # Debe mostrar "kubec
 # Instalar en /usr/local/bin (para evitar conflictos con paquetes del sistema)
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
-
 ```
 
 Posteriormente se instala minikube:
@@ -2337,7 +2183,6 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-latest
 sudo rpm -Uvh minikube-latest.x86_64.rpm
 
 minikube start --driver=docker
-
 ```
 
 <blockquote>
@@ -2363,11 +2208,9 @@ Al realizar el proceso de reinstalación el sistema busca kubectl en /usr/bin/ e
 Continua aquí si no hay problemas con la instalación:
 
 ```
-
 kubectl
 
 kubectl get nodes
-
 ```
 
 ![image](./img/154.png)
@@ -2382,7 +2225,6 @@ El comando get permite obtener objetos, un objeto es cada uno de los componentes
 Ahora se va a trabajar con el componente más básico que es el pod. La unidad más básica de kubernets, que es un wrapper que contiene múltiples contenedores. Cuando se trabaja con Kubernets no se interactua los contenedores.
 
 ```
-
 kubectl get pods
 
 sudo docker image ls
@@ -2392,8 +2234,6 @@ kubectl run nginx-pods --image nginx:latest
 kubectl get pods
 
 kubectl get pods -o wide
-
-
 ```
 
 ![image](./img/156.png)
@@ -2413,7 +2253,6 @@ En Visual Studio se pueden defir los objetos mediante el archivo nginx-pods.yml
 
 
 ```
-
 apiVersion: v1       # Versión de la API de Kubernetes que estás usando
 kind: Pod            # Tipo de recurso que estás creando (en este caso, un Pod)
 metadata:            # Metadatos que identifican el recurso
@@ -2422,20 +2261,17 @@ spec:                # Especificación del estado deseado del Pod
   containers:        # Lista de contenedores que irán dentro del Pod
     - name: nginx-pods  # Nombre del contenedor dentro del Pod
       image: nginx:latest  # Imagen de Docker que se usará para el contenedor
-
 ```
 
 
 ### Sección 5: Port Foward
 
 ```
-
 kubectl get pods -o wide
 
 kubectl port-forward nginx-pods 8181
 
 kubectl port-forward nginx-pods 8181:80
-
 ```
 
 ![image](./img/160.png)
@@ -2452,9 +2288,7 @@ No obstante, es momentaneo al momento de cancelar el proceso en terminal se pier
 Para ingresar a la terminal desde los pods:
 
 ```
-
 kubectl exec -it nginx-pods -- bash
-
 ```
 
 ![image](./img/163.png)
@@ -2474,9 +2308,7 @@ Se pueden eliminar pods mediante el comando de delete o mediante el archivo ngin
 El comando describe para ver las características de un pod:
 
 ```
-
 kubectl describe pods nginx-pods
-
 ```
 
 ![image](./img/166.png)
@@ -2515,12 +2347,9 @@ Al montar el socket dentro de un contenedor, le das a ese contenedor acceso tota
 * Sea útil para herramientas como Portainer, Jenkins o CI/CD pipelines que necesitan administrar contenedores.
 
 ```
-
 sudo docker run -dit -v .:/app -v /var/run/docker.sock:/var/run/docker.sock ubuntu-with-python:v5
 sudo docker run -dit -v .:/app -v /var/run/docker.sock:/var/run/docker.sock python
 sudo docker exec -it 3339cf091683 bash
-
-
 ```
 
 ![image](./img/168.png)
@@ -2530,13 +2359,11 @@ sudo docker exec -it 3339cf091683 bash
 [Docker SDK for Python](https://docker-py.readthedocs.io/en/stable/)
 
 ```
-
 import docker
 
 client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
 
 client.containers.run("ubuntu", "echo hello world")
-
 ```
 
 ![image](./img/170.png)
@@ -2550,13 +2377,11 @@ Ahora una imagen:
 ![image](./img/173.png)
 
 ```
-
 import docker
 
 client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
 
 client.containers.run("ubuntu", "echo hello world")
-
 ```
 
 
@@ -2575,11 +2400,9 @@ Equipos de desarrollo/operaciones que necesitan una forma gráfica de gestionar 
 Administradores de sistemas que quieren supervisar múltiples servidores Docker desde un solo lugar.
 
 ```
-
 docker volume create portainer_data
 
 docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ee:lts
-
 ```
 
 ![image](./img/176.png)
@@ -2618,9 +2441,6 @@ Ejecutar aplicaciones gráficas dentro del contenedor y poder visualizarlas dent
 X Window System es un sistema de ventanas en Linux que actua como cliente servidor.
 
 Definir una variable de entorno para pasarla al contendor, que permita ejecutar aplicaciones gráficas.
-
-
-
 
 ### Sección 4: Entorno VSCode
 
