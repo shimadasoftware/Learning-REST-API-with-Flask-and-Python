@@ -27,32 +27,281 @@ Los temas a ver son:
 
 ### Descripción general del proyecto que construiremos
 
-1. Abrir Visual Studio Code
+#### Explicación general
+
+Este fragmento describe cómo crear una API REST simple que permite trabajar con tiendas y productos. Se puede:
+
+- Crear tiendas con nombre y lista de productos.
+
+- Agregar productos a una tienda.
+
+- Obtener todas las tiendas y sus productos.
+
+- Obtener una tienda específica y sus productos.
+
+- Obtener solo los productos de una tienda específica.
+
+![image](./img/99.png)
+
+#### Crear tiendas - Create stores
+
+Request:
 
 ```
-code .
+POST /store {"name": "My Store"}
 ```
 
-![image](./img/1.png)
+Response:
+
+```
+{"name": "My Store", "items":[]}
+```
+
+Se crea una tienda llamada My Store.
+
+Al principio, la tienda no tiene productos (items: []).
+
+![image](./img/100.png)
+
+#### Crear productos - Create items
+
+Request:
+
+```
+POST /store/item {"name": "Chair", "price": 175.50}
+```
+
+Response:
+
+```
+{"name": "Chair", "price": 175.50}
+```
+
+Se crea un producto llamado Chair (silla) con un precio de 175.50.
+
+![image](./img/101.png)
+
+#### Obtener todas las tiendas y sus productos - Retrieve all stories and their items
+
+Request:
+
+```
+GET /store
+```
+
+Response:
+
+```
+{
+    "stores": [
+        "name": "My Store",
+        "items": [
+            {
+               "name": "Chair",
+               "price": 175.50 
+            }
+        ]
+    ]
+}
+```
+
+Devuelve una lista de tiendas (stores).
+
+En este caso, hay una tienda llamada My Store que contiene un producto llamado Chair con precio 175.50.
+
+![image](./img/102.png)
+
+
+#### Obtener una tienda específica - Get a particular store
+
+Request:
+
+```
+GET /store/My Store/item
+```
+
+Response:
+
+```
+[
+    {
+        "name": "Chair",
+        "price": 175.50 
+    }
+]
+```
+
+![image](./img/103.png)
+
+#### Obtener solo los productos de una tienda - Get only items in a store
+
+Request:
+
+```
+POST /store {"name": "My Store"}
+```
+
+Response:
+
+```
+{"name": "My Store", "items":[]}
+```
+
+Devuelve solo los productos de la tienda My Store, sin información adicional sobre la tienda.
+
+![image](./img/104.png)
+
 
 ### Configuración inicial para una aplicación Flask
 
+[Ver instalación de Flask](./README.md)
+
 ### Su primer punto final de API REST
 
+```
+flask --app app --debug run
+```
 
-### ¿Qué es un JSON?
+![image](./img/105.png)
 
+![image](./img/108.png)
+
+![image](./img/107.png)
 
 ### Cómo interactuar con su API REST y probarla
 
+Insomnia Client o Postman.
+
+![image](./img/106.png)
+
+Crear el get all store data:
+
+```
+{{base_url}}/store
+```
+
+```
+from flask import Flask, request
+
+app = Flask(__name__)
+
+stores = [{"name": "My Store", "items": [{"name": "Chair", "price": 175.50}]}]
+
+
+@app.get("/store")
+def get_stores():
+    return {"stores": stores}
+```
+
+![image](./img/109.png)
+
+![image](./img/110.png)
 
 ### Cómo crear tiendas en nuestra API REST
 
+```
+{{base_url}}/store
+```
 
-### Cómo crear artículos en cada tienda
+```
+@app.post("/store")
+def create_store():
+    request_data = request.get_json()
+    new_store = {"name": request_data["name"], "items": []}
+    stores.append(new_store)
+    return new_store, 201
+```
 
+![image](./img/111.png)
+
+![image](./img/112.png)
+
+![image](./img/113.png)
+
+### Cómo crear artículos en cada tienda - Create an item
+
+```
+{{base_url}}/store/My Store/item
+```
+
+```
+@app.post("/store/<string:store_name>/item")
+def create_item(store_name):
+    request_data = request.get_json()
+    for store in stores:
+        if store["name"] == store_name:
+            new_item = {"name": request_data["name"], "price": request_data["price"]}
+            store["items"].append(new_item)
+            return new_item, 201
+    return {"message": "Store not found"}, 404
+
+```
+
+Función para crear un item:
+
+![image](./img/114.png)
+
+Crear el item table:
+
+![image](./img/115.png)
+
+Ver que tiendas hay:
+
+![image](./img/116.png)
+
+Crear el item laptop:
+
+![image](./img/117.png)
+
+![image](./img/118.png)
 
 ### Cómo conseguir una tienda específica y sus artículos
+
+#### Get a particular store - Obtener los datos de una tienda en específico
+
+```
+{{base_url}}/store/My Store
+```
+
+```
+@app.get("/store/<string:store_name>")
+def get_store(store_name):
+    for store in stores:
+        if store["name"] == store_name:
+            return store
+    return {"message": "Store not found"}, 404
+```
+
+Función:
+
+![image](./img/119.png)
+
+Obtener los datos de la tienda My Store:
+
+![image](./img/121.png)
+
+#### Get only items in a store - Obtener solo los items de una tienda
+
+```
+{{base_url}}/store/My Store/item
+```
+
+```
+@app.get("/store/<string:store_name>/item")
+def get_only_item_in_store(store_name):
+    for store in stores:
+        if store["name"] == store_name:
+            return {"items": store["items"]}
+    return {"message": "Store not found"}, 404
+```
+
+Función:
+
+![image](./img/120.png)
+
+Obtener solo los items de la My Store:
+
+![image](./img/122.png)
 
 
 ---
