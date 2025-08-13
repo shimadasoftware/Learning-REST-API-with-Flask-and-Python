@@ -315,12 +315,194 @@ Obtener solo los items de la My Store:
 
 ### ¿Qué son los contenedores e imágenes de Docker?
 
+![image](./img/123.png)
 
+![image](./img/124.png)
+
+![image](./img/125.png)
+
+![image](./img/126.png)
+
+![image](./img/127.png)
+
+![image](./img/128.png)
 
 ### Cómo ejecutar una aplicación Flask en un contenedor Docker
 
+![image](./img/124.png)
 
 ### Cómo ejecutar la API REST de Flask con Docker Compose
+
+Dockerfile es el archivo que le dice a Docker cómo construir una imagen personalizada que puede ejecutar tu API REST con Flask.
+
+Comandos clave en Dockerfile:
+
+* FROM → Imagen base.
+
+Usa una imagen base de Python (la última versión oficial disponible)..
+
+* EXPOSE → El contenedor escucha en un puerto específico, pero no lo abre al exterior automáticamente.
+
+Indica que el contenedor va a usar el puerto 5000, que es el puerto por defecto donde Flask sirve la aplicación. No abre el puerto por sí solo, solo lo "declara" para quien lo ejecute.
+
+* WORKDIR → Definir la ruta (directorio) de trabajo dentro del contenedor para los comandos posteriores. Si el directorio no existe, Docker lo crea automáticamente.
+
+Establece el directorio de trabajo dentro del contenedor en /app. Todas las instrucciones posteriores se ejecutarán desde ahí. Es como decir: “Entra a esta carpeta dentro del contenedor”.
+
+* RUN → Ejecuta comandos durante la construcción.
+
+Instala el framework Flask dentro del contenedor usando pip. Asegura que Flask esté disponible cuando se ejecute la app.
+
+* COPY → Copia archivos al contenedor.
+
+Copia todo el contenido del directorio actual (donde está el Dockerfile) a la carpeta /app dentro del contenedor. Así el código de tu app se incluye dentro del contenedor.
+
+* CMD → Comando por defecto al iniciar el contenedor.
+
+Define el comando predeterminado que se ejecuta cuando se inicia el contenedor. Aquí le dice a Flask que inicie el servidor y lo haga accesible en cualquier IP (0.0.0.0) dentro del contenedor.
+
+```
+FROM python
+EXPOSE 5000
+WORKDIR /app
+RUN pip install flask
+COPY . /app
+CMD ["flask", "run", "--host", "0.0.0.0"]
+```
+
+Construye una imagen tomando como base la ruta donde se esté ubicado y las instrucciones en el Dockerfile. 
+
+- -t rest-apis-flask-python etiqueta la imagen con un nombre específico.
+- ./ usa el directorio actual (donde está el Dockerfile) como contexto de construcción.
+- build construir la imagen.
+
+```
+sudo docker build -t rest-apis-flask-python ./
+sudo docker image ls
+```
+
+![image](./img/129.png)
+
+Este comando sirve para ejecutar un contenedor Docker en segundo plano, basado en la imagen rest-apis-flask-python:
+
+```
+sudo docker run -d -p 5005:5000 rest-apis-flask-python
+sudo docker container ls
+```
+
+![image](./img/130.png)
+
+| Parte del comando        | Explicación                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `docker run`             | Inicia un nuevo contenedor a partir de una imagen.                                             |
+| `-d`                     | Modo "detached": el contenedor se ejecuta en segundo plano (no bloquea la terminal).           |
+| `-p 5005:5000`           | Mapea el puerto `5000` del contenedor al puerto `5005` de tu máquina.                          |
+| `rest-apis-flask-python` | Nombre de la imagen Docker que quieres ejecutar.                                               |
+
+Puertos:
+
+-p [PUERTO_EXTERNO]:[PUERTO_INTERNO]
+
+| Parte  | Qué es                            | Explicación                                                                                                 |
+| ------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `5000` | **Puerto interno del contenedor** | Es donde **Flask** está corriendo **dentro del contenedor** (por defecto, Flask escucha en el puerto 5000). |
+| `5005` | **Puerto de tu máquina (host)**   | Es el puerto por el que tú accedes desde fuera del contenedor (desde tu navegador, Postman, etc.).          |
+
+Analogía simple
+
+Imagina que tienes un departamento (contenedor) con una puerta interna (5000), pero para que la gente pueda entrar desde la calle (tu PC), necesitas abrir una puerta externa (5005).
+
+Entonces:
+
+* Adentro del contenedor, tu aplicación corre en el puerto 5000.
+
+* Pero tú quieres que desde tu navegador se acceda usando el puerto 5005.
+
+Docker hace ese "puente" gracias al parámetro -p.
+
+Visualmente:
+
+[Tu PC:5005] ───▶ [Docker contenedor:5000 (donde está Flask)]
+
+Tú entras por el puerto 5005, y Docker lo redirige al puerto 5000 interno del contenedor donde está Flask.
+
+```
+sudo docker stop 9f34edff8145
+sudo docker rm 9f34edff8145
+sudo docker container ls -a
+```
+
+![image](./img/131.png)
+
+![image](./img/132.png)
+
+
+### Cómo ejecutar la API REST de Flask con Docker Compose
+
+Qué es Docker Compose
+
+Docker recomienda que se debe de manejar un servicio por contenedor, pero en la realidad se necesitan muchos servicios. Por eso se utiliza Docker Composer que es un Orquestador local que permite trabajar con aplicaciones múltiples contenedores, mediante un archivo de configuración.
+
+Docker Compose es una herramienta para definir y ejecutar aplicaciones multi-contenedor usando un archivo YAML. Permite:
+
+✅ Orquestrar múltiples servicios (bases de datos, backends, frontends) en un solo comando.
+
+✅ Gestionar redes, volúmenes y variables de entorno centralizadamente.
+
+✅ Simplificar el desarrollo y despliegue de aplicaciones complejas.
+
+Para crear e iniciar los contenedores usar:
+
+```
+sudo docker compose up
+```
+
+Nota: detener la ejecución de Visual Studio porque tendría ocupado el puerto e interfiere para esta ejecución con Docker.
+
+![image](./img/133.png)
+
+![image](./img/134.png)
+
+Si se interrumpe el comando en la terminal:
+
+Se detiene el contenedor, pero no se borra. Puedes volver a levantarlo sin reconstruirlo con:
+
+```
+sudo docker compose start api
+```
+
+o
+
+```
+sudo docker compose up api
+```
+
+El nombre del servicio es api.
+
+Si se realizó cambios al docker-compose, se puede volver a ejecutar así:
+
+```
+sudo docker compose up --build --force-recreate --no-deps
+```
+
+| Parte              | Explicación                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `docker compose`   | Usa Docker Compose (herramienta para manejar múltiples contenedores como un solo servicio).                                  |
+| `up`               | Levanta (inicia) el contenedor especificado.                                                                                 |
+| `--build`          | Fuerza la reconstrucción de la imagen del contenedor antes de levantarlo. Útil si cambiaste código o el Dockerfile.          |
+| `--force-recreate` | Obliga a eliminar y **recrear el contenedor**, incluso si no ha cambiado.                                                    |
+| `--no-deps`        | **No inicia los contenedores dependientes** (solo levanta el contenedor `api`).                                              |
+| `api`              | Es el **nombre del servicio** definido en el archivo `docker-compose.yml` (no es el nombre de la imagen, sino del servicio). |
+
+✅ Has modificado el código fuente o el Dockerfile del servicio api.
+
+✅ Quieres probar solo el servicio api sin arrancar toda la aplicación completa (por ejemplo, sin la base de datos u otros servicios definidos en el docker-compose.yml).
+
+✅ Quieres asegurarte de que el contenedor se reconstruya desde cero (por eso --force-recreate y --build).
+
+✅ Estás depurando problemas y necesitas reiniciar ese contenedor específico.
+
+![image](./img/135.png)
 
 
 ---
