@@ -387,7 +387,7 @@ Este comando sirve para ejecutar un contenedor Docker en segundo plano, basado e
 
 ```
 sudo docker run -d -p 5005:5000 rest-apis-flask-python
-sudo docker container ls
+    sudo docker container ls
 ```
 
 ![image](./img/130.png)
@@ -521,17 +521,375 @@ sudo docker compose up --build --force-recreate --no-deps
 
 ### Mejoras en el modelo de datos para nuestra API
 
+Por ejemplo, para crear un item usamos el nombre de la tienda, la cuál es una práctica poco común. Para ello se suele utilizar un identificador único. Pueden ser:
+
+- Números incrementales.
+
+- Los UUIDs (Universally Unique Identifiers) son identificadores únicos universales. Se usan para asignar identificadores que sean únicos en todo el mundo y en cualquier momento, sin necesidad de una base de datos central o coordinación entre sistemas.
+
+Pueden verse así:
+
+```
+123e4567-e89b-12d3-a456-426614174000
+
+8-4-4-4-12 caracteres
+```
+
+#### Archivo requirements.txt
+
+El archivo requirements.txt es un archivo de texto que se usa en proyectos de Python para listar todas las dependencias (paquetes o librerías) que tu aplicación necesita para funcionar correctamente.
+
+Sirve para que cualquier persona (o servidor) que quiera correr tu proyecto pueda instalar exactamente los mismos paquetes que tú usaste, con un solo comando:
+
+```
+pip install -r requirements.txt
+```
+
+```
+flask
+flask-smorest
+python-dotenv
+```
+
+| Paquete         | ¿Qué hace?                                                                         |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `Flask`         | Framework web para construir APIs y apps web en Python.                            |
+| `flask-smorest` | Extensión de Flask para crear APIs REST con validación y documentación automática. |
+| `python-dotenv` | Permite usar un archivo `.env` para cargar variables de entorno en tu aplicación.  |
+
+![image](./img/136.png)
+
+1. flask-smorest: 
+
+Es una extensión de Flask que facilita la creación de APIs RESTful usando:
+
+- OpenAPI / Swagger (documentación automática de la API)
+
+- Marshmallow (para validar y serializar datos)
+
+- Blueprints (para organizar el código modularmente)
+
+¿Por qué usarlo?
+
+- Te ayuda a escribir menos código repetitivo.
+
+- Agrega validación automática de entradas y salidas.
+
+- Genera documentación interactiva de tu API (Swagger UI).
+
+2. python-dotenv
+
+python-dotenv es una librería para cargar variables de entorno desde un archivo .env.
+
+Esto es útil para guardar configuraciones como:
+
+- Claves secretas
+
+- Credenciales
+
+- URLs de bases de datos
+
+- Configuración sensible
+
+#### Archivo .flaskenv
+
+El archivo .flaskenv es un archivo especial que se usa en proyectos con Flask para definir variables de entorno específicas que Flask utilizará automáticamente al iniciar la aplicación en modo desarrollo.
+
+Es un archivo de texto plano que contiene pares clave=valor, como:
+
+```
+FLASK_APP=app.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+```
+
+1. FLASK_APP = app
+
+Le dice a Flask qué archivo o módulo debe ejecutar cuando corres:
+
+```
+flask run
+```
+
+En este caso, app se refiere a un archivo llamado app.py, o un módulo llamado app.
+
+2. FLASK_ENV = 'development'
+
+Esta línea activa el modo desarrollo de Flask.
+
+Habilita cosas como:
+
+- Recarga automática cuando cambias el código (hot reload).
+
+- Errores más detallados en pantalla.
+
+- Modo depuración (debug) activado.
+
+Esto solo debe usarse en desarrollo, nunca en producción, porque expone información sensible.
+
+![image](./img/137.png)
+
+![image](./img/138.png)
+
+```
+pip install -r requirements.txt
+```
+
+Nota: ahora se usa FLASK_DEBUG
+
+![image](./img/139.png)
+
+![image](./img/140.png)
+
+Ahora se reestructura el código, se reemplaza las listas por diccionarios y se crea el archivo db.py:
+
+![image](./img/141.png)
+
+![image](./img/142.png)
+
+Los GET de stores:
+
+1. Obtener la información de todas las tiendas:
+
+```
+@app.get("/store")
+def get_stores():
+    return {"stores": list(stores.values())}
+```
+
+2. Obtener la información de una tienda en particular.
+
+```
+@app.get("/store/<string:store_id>")
+def get_store(store_id):
+    try:
+        return stores[store_id]
+    except KeyError:
+        return {"message": "Store not found"}, 404
+```
+
+![image](./img/143.png)
+
+Los GET de items:
+
+1. Obtener la información de todos los productos:
+
+```
+@app.get("/item")
+def get_all_items():
+    return {"items": list(items.values())}
+```
+
+2. Obtener la información de un producto en particular.
+
+```
+@app.get("/item/<string:item_id>")
+def get_item(item_id):
+    try:
+        return items[item_id]
+    except KeyError:
+        return {"message": "Item not found"}, 404
+```
+
+![image](./img/144.png)
+
+Crear una tienda:
+
+```
+@app.post("/store")
+def create_store():
+    store_data = request.get_json()
+    store_id = uuid.uuid4().hex
+    store = {**store_data, "id": store_id}
+    stores[store_id] = store
+    return store, 201
+```
+
+![image](./img/145.png)
+
+Crear un producto:
+
+```
+@app.post("/item")
+def create_item():
+    item_data = request.get_json()
+
+    if item_data["store_id"] not in stores:
+        return {"message": "Store not found"}, 404
+
+    item_id = uuid.uuid4().hex
+    item = {**item_data, "id": item_id}
+    items[item_id] = item
+    return item, 201
+```
+
+![image](./img/146.png)
 
 
 ### Mejoras generales en nuestra primera API REST
 
+¿Qué hace abort?
 
+abort corta inmediatamente la ejecución de la ruta (endpoint) y devuelve un error HTTP con un código de estado, mensaje y opcionalmente un detalle.
+
+Es muy útil para:
+
+- Manejar errores personalizados
+
+- Validar datos o condiciones
+
+- Controlar accesos
+
+| Método                    | ¿Lo recomiendo?                     | Cuándo usarlo                                                              |
+| ------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `return {...}, 404`       | ✅ Sí                                | Cuando quieras controlar la estructura exacta tú mismo                     |
+| `abort(404, message=...)` | ✅✅ Sí (más aún con `flask-smorest`) | Para respuestas de error estructuradas y bien documentadas automáticamente |
+
+```
+from flask_smorest import abort
+```
+
+Ejemplo:
+
+```
+abort(404, message="Store not found")
+```
+
+![image](./img/147.png)
+
+![image](./img/148.png)
+
+Se actualiza las urls en el Postman:
+
+1. Crear una tienda:
+
+![image](./img/149.png)
+
+2. Obtener todas las tiendas:
+
+![image](./img/150.png)
+
+3. Obtener una tienda:
+
+![image](./img/151.png)
+
+4. Crear un producto:
+
+![image](./img/152.png)
+
+5. Obtener todos los productos:
+
+![image](./img/153.png)
+
+6. Obtener un producto:
+
+![image](./img/154.png)
+
+Ahora se implementan otras validaciones para las funciones de crear. No obstante, Flask tiene librerías para apoyar el proceso de las pruebas:
+
+![image](./img/155.png)
+
+![image](./img/156.png)
+
+Se prueba en postman:
+
+![image](./img/157.png)
+
+![image](./img/158.png)
 
 ### Nuevos puntos finales para nuestra primera API REST
 
+Se adicionan en postman delete y put para store y para items.
+
+![image](./img/159.png)
+
+Delete:
+
+![image](./img/162.png)
+
+Se prueba en postman:
+
+![image](./img/160.png)
+
+![image](./img/161.png)
+
+Update:
+
+![image](./img/163.png)
+
+Se prueba en postman:
+
+- Store:
+
+![image](./img/164.png)
+
+![image](./img/165.png)
+
+- Item:
+
+![image](./img/166.png)
+
+![image](./img/167.png)
 
 
 ### Cómo ejecutar la API en Docker con recarga automática y modo de depuración
+
+En vez de ejecutar la aplicación en Flask se ejecuta en docker, para ello se modifica el Dockerfile:
+
+```
+FROM python
+EXPOSE 5000
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . /app
+CMD ["flask", "run", "--host", "0.0.0.0"]
+```
+
+![image](./img/168.png)
+
+```
+sudo docker build -t simple-flask-api ./
+sudo docker run -dp 5005:5000 simple-flask-api
+sudo docker container ls
+```
+
+Cada vez que se actualiza el código, hay que reconstruir, para evitar eso se utiliza los volúmenes. Los volúmenes permiten persistir datos fuera del contenedor (útil para bases de datos, configuraciones, etc.).
+
+El volúmen monta tu directorio actual del host (tu máquina) en el contenedor, en la ruta /app. Todo el código que tienes en tu carpeta local se refleja en tiempo real dentro del contenedor en /app.  Esto es útil para desarrollo: si editas archivos en tu máquina, no necesitas reconstruir la imagen Docker para ver los cambios.
+
+Este es el "working directory" (directorio de trabajo) dentro del contenedor. "Cuando entres al contenedor o ejecutes comandos, empieza desde /app."
+
+```
+sudo docker run -dp 5005:5000 -w /app -v "$(pwd):/app" simple-flask-api
+```
+
+![image](./img/169.png)
+
+| Parte              | Significado                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docker run`       | Crea y ejecuta un **nuevo contenedor** a partir de una imagen.                                                                                                        |
+| `-d`               | **Detached mode**: ejecuta el contenedor en segundo plano (no bloquea la terminal).                                                                                   |
+| `-p 5005:5000`     | Mapea el puerto **5000 del contenedor** (donde corre Flask) al puerto **5005 de tu máquina** (puedes acceder desde `localhost:5005`).                                 |
+| `-w /app`          | Define el **directorio de trabajo dentro del contenedor** como `/app`. Es como hacer `cd /app` dentro del contenedor.                                                 |
+| `-v "$(pwd):/app"` | Monta un **volumen**: el directorio actual (`$(pwd)`) de tu máquina se monta como `/app` dentro del contenedor. Esto permite que Flask vea tus archivos del proyecto. |
+| `simple-flask-api` | Es el **nombre de la imagen Docker** desde la que se creará el contenedor.                                                                                            |
+
+¿Qué está pasando exactamente?
+
+Docker crea un contenedor desde la imagen simple-flask-api.
+
+Asigna como directorio de trabajo /app.
+
+Mapea tu carpeta actual (con el código) al directorio /app dentro del contenedor.
+
+Ejecuta Flask en el puerto 5000 (como definido en la imagen).
+
+Expone Flask al puerto 5005 de tu computadora.
+
+El contenedor corre en segundo plano (-d).
+
+
 
 
 
