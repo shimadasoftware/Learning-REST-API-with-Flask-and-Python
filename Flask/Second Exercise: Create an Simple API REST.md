@@ -877,35 +877,322 @@ sudo docker run -dp 5005:5000 -w /app -v "$(pwd):/app" simple-flask-api
 
 ¿Qué está pasando exactamente?
 
-Docker crea un contenedor desde la imagen simple-flask-api.
+* Docker crea un contenedor desde la imagen simple-flask-api.
 
-Asigna como directorio de trabajo /app.
+* Asigna como directorio de trabajo /app.
 
-Mapea tu carpeta actual (con el código) al directorio /app dentro del contenedor.
+* Mapea tu carpeta actual (con el código) al directorio /app dentro del contenedor.
 
-Ejecuta Flask en el puerto 5000 (como definido en la imagen).
+* Ejecuta Flask en el puerto 5000 (como definido en la imagen).
 
-Expone Flask al puerto 5005 de tu computadora.
+* Expone Flask al puerto 5005 de tu computadora.
 
-El contenedor corre en segundo plano (-d).
+* El contenedor corre en segundo plano (-d).
 
+Hay que modificar el puerto en la variable de ambiente en Postman:
 
+![image](./img/170.png)
 
+Prueba modificando el código para ver si se actualiza dentro del contenedor:
+
+![image](./img/171.png)
+
+![image](./img/172.png)
+
+En conclusión, hay dos formas de ejecutar Docker Container:
+
+![image](./img/173.png)
+
+| Comando                                                                   | ¿Cuándo usarlo?                                                                                                                         | ¿Qué está pasando?                                                                                         |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `sudo docker run -dp 5005:5000 simple-flask-api`                          | **Para producción** o cuando ya tienes todos los archivos dentro de la imagen Docker y no necesitas modificar el código en tiempo real. | El contenedor se ejecuta de manera aislada sin reflejar cambios en el código de tu máquina.                |
+| `sudo docker run -dp 5005:5000 -w /app -v "$(pwd):/app" simple-flask-api` | **Para desarrollo**, cuando necesitas que el contenedor y tu máquina compartan los archivos y los cambios se reflejen en tiempo real.   | Tu código local se monta en el contenedor, permitiéndote editar y ver cambios sin reiniciar el contenedor. |
 
 
 ### Cómo usar Blueprints y MethodViews en Flask
 
+**1. Blueprints**
+
+🌟 ¿Qué es un Blueprint?
+
+Un Blueprint en Flask es una forma de organizar y modularizar tu aplicación. Te permite dividir tu aplicación en varios módulos o componentes que pueden tener sus propias rutas, vistas y otros recursos, y luego registrarlos en tu aplicación principal.
+
+🧩 ¿Cómo funciona un Blueprint?
+
+Piensa en un Blueprint como un "esquema" o "plantilla" que define un conjunto de rutas y vistas.
+
+El Blueprint no es ejecutado directamente; se registra en la aplicación principal (normalmente en el archivo app.py).
+
+Permite dividir la lógica de una aplicación en módulos más pequeños y reutilizables.
+
+**2. MethodViews**
+
+🌟 ¿Qué es un MethodView?
+MethodViews en Flask son una forma de organizar las vistas (rutas) en base a métodos HTTP como GET, POST, PUT, etc., usando clases en lugar de funciones tradicionales. Es una forma más orientada a objetos de manejar rutas HTTP.
+
+🧩 ¿Cómo funciona un MethodView?
+
+Flask permite definir clases que manejan las rutas y sus métodos HTTP correspondientes.
+
+Cada clase que hereda de flask.views.MethodView tiene métodos como get(), post(), put(), etc., que representan los métodos HTTP que la ruta acepta.
+
+| Característica               | **Blueprints**                                                                              | **MethodViews**                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Modularización**           | ✅ Ideal para dividir la aplicación en componentes (autenticación, perfil de usuario, etc.). | ❌ No tan adecuado para dividir la aplicación en módulos.                                                     |
+| **Métodos HTTP específicos** | ❌ Necesitas manejar métodos HTTP manualmente dentro de las funciones.                       | ✅ Ideal para manejar rutas y métodos HTTP con clases.                                                        |
+| **Organización del código**  | ✅ Ayuda a organizar grandes aplicaciones Flask.                                             | ✅ Bueno para aplicaciones más pequeñas o cuando se prefieren las clases sobre las funciones.                 |
+| **Escalabilidad**            | ✅ Aumenta la escalabilidad al dividir el código en módulos reutilizables.                   | ❓ Usado principalmente para organizar rutas, pero no tan flexible como Blueprints para aplicaciones grandes. |
+
+Resumen
+
+- Blueprints: Son ideales para modularizar y organizar aplicaciones grandes. Te permiten dividir tu aplicación en módulos reutilizables.
+
+- MethodViews: Son útiles cuando prefieres una organización orientada a objetos, donde cada ruta puede manejar diferentes métodos HTTP dentro de una clase.
+
+Por lo tanto, se crea una carpeta resources dónde se añaden los archivos para store e items.
+
+![image](./img/174.png)
+
+![image](./img/175.png)
+
+![image](./img/176.png)
+
+![image](./img/177.png)
+
+Ahora el api se restructura de esta forma:
+
+```
+from flask import Flask
+
+from flask_smorest import Api
+
+from resources.item import blp as ItemBlueprint
+from resources.store import blp as StoreBlueprint
+
+app = Flask(__name__)
+
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["API_TITLE"] = "Stores REST API"
+app.config["API_VERSION"] = "v1"
+app.config["OPENAPI_VERSION"] = "3.0.3"
+app.config["OPENAPI_URL_PREFIX"] = "/"
+app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
+app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+
+api = Api(app)
+
+api.register_blueprint(ItemBlueprint)
+api.register_blueprint(StoreBlueprint)
+```
+
+![image](./img/178.png)
+
+1. Flask(__name__): Crea una instancia de la aplicación Flask.
+
+2. PROPAGATE_EXCEPTIONS = True: Esto hace que las excepciones se propaguen, lo cual es útil para manejar errores en un nivel superior y personalizar el comportamiento de error en lugar de tener una página de error estándar.
+
+3. API_TITLE: Establece el título de la API en la documentación generada.
+
+4. API_VERSION: Especifica la versión de la API, que es común para tener un control de las versiones (por ejemplo, v1).
+
+5. OPENAPI_VERSION = "3.0.3": Define la versión de OpenAPI (anteriormente conocida como Swagger) que se utilizará para la documentación automática de la API.
+
+6. OPENAPI_URL_PREFIX = "/": Este es el prefijo base para las rutas de la API. El valor / significa que las rutas serán accesibles desde la raíz.
+
+7. OPENAPI_SWAGGER_UI_PATH = "/swagger-ui": Establece la ruta en la cual estará accesible la interfaz Swagger UI. En este caso, la interfaz se carga en /swagger-ui.
+
+8. OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/": Esto le dice a Flask-Smorest que cargue la interfaz de Swagger UI desde un servidor CDN externo. Esto se usa para mostrar la documentación interactiva de tu API en /swagger-ui.
+
+Creación de la API:
+
+```
+api = Api(app)
+```
+
+Se crea una instancia de Api de Flask-Smorest, pasando la aplicación Flask como argumento. Esto permite que la API utilice todas las configuraciones que definiste en la aplicación, incluyendo la documentación y los Blueprints.
+
+Registro de los Blueprints:
+
+```
+api.register_blueprint(ItemBlueprint)
+api.register_blueprint(StoreBlueprint)
+```
+
+ItemBlueprint y StoreBlueprint son dos Blueprints que se registran en la API. Cada Blueprint puede tener sus propias rutas (endpoints) y lógica, y es como un módulo independiente de tu aplicación.
+
+#### ¿Qué es un Blueprint aquí?
+
+Blueprints en Flask son una forma de modularizar tu aplicación. En este caso, ItemBlueprint y StoreBlueprint se encuentran en los archivos resources/item.py y resources/store.py, respectivamente.
+
+Cada Blueprint agrupa un conjunto de rutas que pertenecen a un componente de la API: en este caso, Item y Store.
+
+#### Flask-Smorest y Swagger:
+
+Flask-Smorest es una extensión para Flask que combina varias funcionalidades útiles para APIs RESTful, como:
+
+- OpenAPI: Generación automática de documentación para tus rutas de la API (lo que se traduce en una documentación Swagger UI).
+
+- Validación: Validación de los parámetros de entrada de las solicitudes y las respuestas.
+
+- Formateo: Formatea las respuestas JSON de acuerdo con las especificaciones OpenAPI.
+
+¿Cómo usar Swagger?
+
+Swagger es un conjunto de herramientas y especificaciones para documentar y probar APIs RESTful de forma interactiva. Swagger proporciona un lenguaje estándar para describir las rutas y funcionalidades de una API, lo que facilita tanto su consumo como su mantenimiento.
+
+Al acceder a /swagger-ui en tu navegador, podrás ver una interfaz interactiva generada por Swagger UI, que muestra todos los endpoints de la API y permite realizar peticiones directamente desde la interfaz.
+
+Los Blueprints (ItemBlueprint y StoreBlueprint) serán representados en la interfaz de Swagger UI con sus respectivos endpoints (rutas), tipos de solicitudes HTTP (GET, POST, PUT, DELETE, etc.) y parámetros.
+
+```
+http://127.0.0.1:5005/swagger-ui
+```
+
+![image](./img/179.png)
+
+![image](./img/180.png)
 
 
 ### Cómo escribir esquemas de malvavisco (Marshmallow) para nuestra API
 
+#### ¿Qué es Marshmallow?
+
+Marshmallow es una biblioteca en Python que se usa para:
+
+- Serializar: Convertir objetos Python (como diccionarios, clases, etc.) en formatos como JSON para enviar a clientes o guardar.
+
+- Deserializar: Convertir datos JSON o similares en objetos Python.
+
+- Validar: Comprobar que los datos entrantes cumplen ciertas reglas (por ejemplo, que un campo es obligatorio, que un número esté en un rango, que un texto tenga cierta longitud, etc.).
+
+#### ¿Qué es un esquema en Marshmallow?
+
+Un esquema (schema) es una clase que define cómo debe lucir un dato. Básicamente, es una plantilla o mapa que describe:
+
+- Qué campos tiene un objeto.
+
+- Qué tipo de dato tiene cada campo (cadena, número, fecha, etc.).
+
+- Reglas o validaciones para esos campos.
+
+- Opcionalmente, cómo transformar esos campos al serializar o deserializar.
+
+#### ¿Para qué sirve un esquema?
+
+Supongamos que tienes un objeto User con campos id, nombre y email. El esquema define:
+
+- Que id es un número entero.
+
+- Que nombre es una cadena obligatoria.
+
+- Que email debe tener formato de correo válido.
+
+Así, cuando recibes datos JSON para crear un usuario, puedes usar ese esquema para:
+
+- Validar que los datos son correctos.
+
+- Convertir esos datos JSON en un objeto Python (deserializar).
+
+- Convertir objetos Python en JSON para enviarlos (serializar).
+
+Este código define esquemas (schemas) para serializar y validar datos relacionados con dos entidades: Item (artículo) y Store (tienda). Los esquemas permiten validar y transformar datos que entran o salen en tu API. Se crea el archivo schemas.py:
+
+Importa la clase base Schema y el módulo fields que contiene diferentes tipos de campos (cadena, entero, flotante, etc.) para definir los esquemas.
+
+- dump_only=True: no se espera que el usuario envíe este dato, solo se devuelve.
+- required=True: obligatorio.
+
+```
+from marshmallow import Schema, fields
+
+
+class ItemSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(required=True)
+    price = fields.Float(required=True)
+    store_id = fields.Str(required=True)
+
+
+class ItemUpdateSchema(Schema):
+    name = fields.Str()
+    price = fields.Float()
+
+
+class StoreSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(required=True)
+
+
+class StoreUpdateSchema(Schema):
+    name = fields.Str()
+```
+
+![image](./img/181.png)
 
 
 ### Cómo realizar la validación de datos con Marshmallow
 
+1. Se remueve la validación manual y el uso de get_json()
+
+Antes, para obtener los datos enviados en una petición (como POST o PUT), se hacía:
+
+```
+data = request.get_json()
+```
+
+y luego se validaba manualmente si estaban los campos esperados.
+
+2. Ahora no es necesario llamar a get_json() ni hacer validaciones manuales. Esto se debe a que:
+
+- Se usan decoradores @blp.arguments(ItemSchema) o @blp.arguments(ItemUpdateSchema).
+
+- Estos decoradores usan Marshmallow para validar y transformar automáticamente el JSON recibido.
+
+- Los datos ya validados y deserializados llegan como un parámetro (item_data o store_data) directamente al método.
+
+El decorador @blp.arguments: Este decorador se usa en métodos que reciben datos en el cuerpo de la petición (PUT, POST, PATCH). 
+
+1. POST: Crear un nuevo recurso.
+2. PUT: Reemplazar o crear un recurso en una ubicación específica.
+3. PATCH: Modificar parcialmente un recurso.
+
+| Método | Uso principal              | Actualiza todo o parte  | URL típica    | Código éxito típico  |
+| ------ | -------------------------- | ----------------------- | ------------- | -------------------- |
+| POST   | Crear un recurso nuevo     | N/A                     | `/items`      | 201 Created          |
+| PUT    | Reemplazar o crear recurso | Todo el recurso         | `/items/{id}` | 200 OK o 201 Created |
+| PATCH  | Actualizar parcialmente    | Solo campos específicos | `/items/{id}` | 200 OK               |
+
+3. post(self, item_data): Recibe los datos para crear un nuevo item validados por ItemSchema.
+
+![image](./img/182.png)
+
+![image](./img/183.png)
+
+![image](./img/184.png)
+
+![image](./img/185.png)
+
+![image](./img/186.png)
 
 
 ### Decorando respuestas con Flask-Smorest
+
+¿Qué hace @blp.response(status_code, schema)?
+
+- status_code: Es el código HTTP de la respuesta (por ejemplo, 200, 201, 404, etc.).
+
+- schema: Es un esquema de Marshmallow que define cómo debe formatearse y validarse la respuesta que se devuelve.
+
+| Decorador                    | Significado                                                         |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `@blp.response(200, Schema)` | Devuelve una respuesta con código 200 y cuerpo que sigue el esquema |
+| `@blp.response(201, Schema)` | Igual, pero con código 201 (creación exitosa)                       |
+| `Schema(many=True)`          | Devuelve una **lista** de objetos con ese esquema                   |
+
+
+![image](./img/187.png)
+
+![image](./img/188.png)
 
 
 ---
@@ -919,7 +1206,7 @@ El contenedor corre en segundo plano (-d).
 - Cómo configurar Flask-SQLAlchemy con tu aplicación Flask
 - Cómo insertar datos en una tabla con SQLAlchemy
 - Cómo encontrar modelos en la base de datos por ID o devolver un
-- Cómo actualizar modelos con SQLAlchemy}
+- Cómo actualizar modelos con SQLAlchemy
 - Cómo obtener la lista de todos los modelos
 - Cómo eliminar modelos con SQLAlchemy
 - Eliminar modelos relacionados con cascadas
@@ -950,7 +1237,7 @@ El contenedor corre en segundo plano (-d).
 
 
 
-### Cómo actualizar modelos con SQLAlchemy}
+### Cómo actualizar modelos con SQLAlchemy
 
 
 
