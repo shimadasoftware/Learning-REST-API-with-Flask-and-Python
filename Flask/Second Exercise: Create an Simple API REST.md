@@ -1215,15 +1215,176 @@ El decorador @blp.arguments: Este decorador se usa en métodos que reciben datos
 
 ### Descripción general y por qué usar SQLAlchemy
 
+SQLAlchemy es una biblioteca poderosa y muy utilizada en Python para interactuar con bases de datos relacionales (como PostgreSQL, MySQL, SQLite, etc.).
+
+🧠 ¿Qué es exactamente?
+
+SQLAlchemy es un ORM (Object Relational Mapper), pero también ofrece una capa de bajo nivel para interactuar directamente con SQL si lo prefieres.
+
+📌 ORM = Object Relational Mapper
+
+El ORM permite trabajar con la base de datos usando clases y objetos Python en lugar de escribir sentencias SQL directamente.
+
+🔧 ¿Para qué se usa?
+
+- Definir tablas como clases Python.
+
+- Insertar, actualizar, eliminar y consultar datos sin escribir SQL directamente.
+
+- Gestionar relaciones entre tablas (uno-a-uno, uno-a-muchos, muchos-a-muchos).
+
+- Hacer que tu aplicación sea más portable entre distintos motores de bases de datos.
+
+```
+flask
+flask-smorest
+python-dotenv
+sqlalchemy
+flask-sqlalchemy
+```
+
+```
+pip install -r requirements.txt
+```
+
+![image](./img/189.png)
 
 
 ### Cómo codificar un modelo simple de SQLAlchemy
 
+![image](./img/190.png)
+
+1. Tabla
+
+```
+__tablename__ = "items"
+```
+
+Esta clase define una tabla llamada items en la base de datos.
+
+Hereda de db.Model, lo que le dice a SQLAlchemy: “esto es un modelo ORM que representa una tabla”.
+
+El nombre de la tabla se define explícitamente con __tablename__, pero si no lo pusieras, usaría por defecto el nombre de la clase en minúsculas: itemmodel.
+
+2. Campos (Columnas de la tabla)
+
+```
+id = db.Column(db.Integer, primary_key=True)
+```
+
+Tipo entero.
+
+Clave primaria (es única y auto-incremental por defecto).
+
+```
+name = db.Column(db.String(88), unique=True, nullable=False)
+```
+
+Tipo cadena de texto de hasta 88 caracteres.
+
+unique=True: no se permiten dos items con el mismo nombre.
+
+nullable=False: no puede estar vacío.
+
+```
+price = db.Column(db.Float(precision=2), unique=False, nullable=False)
+```
+
+Tipo flotante con 2 decimales.
+
+Obligatorio (nullable=False).
+
+No es único (unique=False), es decir, pueden haber varios con el mismo precio.
+
+```
+store_id = db.Column(db.Integer, unique=False, nullable=False)
+```
+
+Indica a qué tienda pertenece este item (clave foránea en sistemas más complejos).
+
+En este código aún no se define una relación con una tabla stores, pero se intuye que debería hacerlo más adelante.
+
+![image](./img/191.png)
+
+![image](./img/192.png)
 
 
 ### Cómo escribir relaciones uno a muchos con SQLAlchemy
 
+El código que tiene una relación uno a muchos (1:N) entre StoreModel y ItemModel usando SQLAlchemy:
 
+```
+items = db.relationship("ItemModel", back_populates="store", lazy="dynamic")
+```
+
+Esto le dice a SQLAlchemy:
+
+- “Cada tienda tiene una relación con muchos ItemModel”.
+
+db.relationship("ItemModel"):
+
+- Crea la conexión lógica desde una tienda hacia todos sus ítems.
+
+- SQLAlchemy se encargará de recuperar todos los items cuyo store_id coincida con el id de esta tienda.
+
+back_populates="store":
+
+- Se enlaza con la otra parte de la relación (en ItemModel, la propiedad store).
+
+- Así se crea una relación bidireccional.
+
+lazy="dynamic":
+
+- Esto hace que store.items no devuelva directamente una lista, sino una consulta dinámica (query).
+
+- Puedes hacer cosas como store.items.filter(...) sin cargar todos los ítems en memoria inmediatamente.
+
+```
+store_id = db.Column(
+    db.Integer, db.ForeignKey("stores.id"), unique=False, nullable=False
+)
+```
+
+Esta línea crea una clave foránea que conecta cada ítem con una tienda.
+
+"stores.id" indica que el campo store_id de ItemModel hace referencia al campo id de la tabla stores.
+
+```
+store = db.relationship("StoreModel", back_populates="items")
+```
+
+Aquí se define la relación inversa:
+
+“Cada ítem tiene un solo StoreModel, llamado store”.
+
+Se enlaza con el items definido en StoreModel mediante back_populates.
+
+```
+stores
+-------
+id | name
+1  | Tienda A
+2  | Tienda B
+
+items
+--------
+id | name  | price | store_id
+1  | Silla | 25.0  |    1      → pertenece a Tienda A
+2  | Mesa  | 50.0  |    1      → pertenece a Tienda A
+3  | Lámpara|30.0  |    2      → pertenece a Tienda B
+```
+
+| Elemento                                | Propósito                                                    |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `store_id = db.ForeignKey("stores.id")` | Relación desde Item hacia Store (clave foránea)              |
+| `store = db.relationship(...)`          | Permite acceder a la tienda desde un item (`item.store`)     |
+| `items = db.relationship(...)`          | Permite acceder a los ítems desde una tienda (`store.items`) |
+| `back_populates`                        | Conecta ambas direcciones de la relación                     |
+| `lazy="dynamic"`                        | Permite consultas filtradas sin cargar todo de inmediato     |
+
+![image](./img/193.png)
+
+![image](./img/194.png)
 
 ### Cómo configurar Flask-SQLAlchemy con tu aplicación Flask
 
