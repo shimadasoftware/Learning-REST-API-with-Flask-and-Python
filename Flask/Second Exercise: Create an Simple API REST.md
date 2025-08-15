@@ -1836,11 +1836,142 @@ Se elimina el producto:
 
 ### Cambios en esta sección
 
+![image](./img/220.png)
+
+![image](./img/221.png)
+
+![image](./img/222.png)
+
+![image](./img/223.png)
+
 
 ### Relación uno a muchos entre tiendas y etiquetas
 
+Crear tag.py en models:
+
+Relación uno a muchos con store y muchos a muchos con items.
+
+```
+from db import db
+
+
+class TagModel(db.Model):
+    __tablename__ = "tags"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=False, nullable=False)
+    store_id = db.Column(db.Integer(), db.ForeignKey("stores.id"), nullable=False)
+
+    store = db.relationship("StoreModel", back_populates="tags")
+    items = db.relationship("ItemModel", back_populates="tags", secondary="items_tags")
+```
+
+![image](./img/224.png)
+
+Añadir la relación en stores:
+
+```
+class StoreModel(db.Model):
+    __tablename__ = "stores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    items = db.relationship(
+        "ItemModel",
+        back_populates="store",
+        lazy="dynamic",
+        cascade="all, delete",
+    )
+    tags = db.relationship("TagModel", back_populates="store", lazy="dynamic")
+```
+
+![image](./img/225.png)
+
+En item:
+
+```
+class ItemModel(db.Model):
+    __tablename__ = "items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    price = db.Column(db.Float(precision=2), unique=False, nullable=False)
+    store_id = db.Column(
+        db.Integer, db.ForeignKey("stores.id"), unique=False, nullable=False
+    )
+    store = db.relationship("StoreModel", back_populates="items")
+    tags = db.relationship("TagModel", back_populates="items", secondary="items_tags")
+
+```
+
+![image](./img/226.png)
+
+![image](./img/227.png)
+
+Añadir los esquemas:
+
+```
+
+class PlainTagSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str()
+
+class TagSchema(PlainTagSchema):
+    store_id = fields.Int(load_only=True)
+    store = fields.Nested(PlainStoreSchema(), dump_only=True)
+    items = fields.List(fields.Nested(PlainItemSchema()), dump_only=True)
+```
+
+![image](./img/228.png)
+
+En resources añadir tag.py:
+
+![image](./img/229.png)
+
+En app.py añadir el Blue print:
+
+![image](./img/230.png)
+
+En __init__ el TagModel:
+
+![image](./img/231.png)
+
+Probar en Postman:
+
+![image](./img/232.png)
+
 
 ### Relación muchos a muchos entre artículos y etiquetas
+
+![image](./img/233.png)
+
+![image](./img/234.png)
+
+![image](./img/235.png)
+
+![image](./img/236.png)
+
+![image](./img/237.png)
+
+![image](./img/238.png)
+
+![image](./img/239.png)
+
+Prueba en Postman:
+
+![image](./img/240.png)
+
+![image](./img/241.png)
+
+![image](./img/242.png)
+
+![image](./img/243.png)
+
+![image](./img/244.png)
+
+![image](./img/245.png)
+
+![image](./img/246.png)
 
 
 ---
