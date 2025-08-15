@@ -1386,35 +1386,443 @@ id | name  | price | store_id
 
 ![image](./img/194.png)
 
+1. PlainItemSchema y PlainStoreSchema
+
+Estos son esquemas básicos sin relaciones anidadas. Se usan cuando no necesitas incluir datos relacionados.
+
+```
+class PlainItemSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(required=True)
+    price = fields.Float(required=True)
+```
+
+Define los campos simples de un Item.
+
+dump_only=True: significa que id solo se incluirá al devolver datos, no al recibirlos.
+
+required=True: el campo debe estar presente al crear o actualizar.
+
+```
+class PlainStoreSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(required=True)
+Esquema simple para una tienda.
+```
+
+2. ItemUpdateSchema y StoreUpdateSchema
+
+Estos esquemas se usan cuando vas a actualizar parcialmente los objetos (por ejemplo, con PUT o PATCH).
+
+```
+class ItemUpdateSchema(Schema):
+    name = fields.Str()
+    price = fields.Float()
+```
+
+Todos los campos son opcionales (no tienen required=True).
+
+Permite enviar solo los campos que deseas modificar.
+
+```
+class StoreUpdateSchema(Schema):
+    name = fields.Str()
+```
+
+Igual: campo opcional para actualizar el nombre de una tienda.
+
+3. StoreSchema
+
+```
+class StoreSchema(PlainStoreSchema):
+    items = fields.List(fields.Nested(lambda: ItemSchema(), dump_only=True))
+```
+
+¿Qué hace?
+
+Hereda los campos de PlainStoreSchema (id y name).
+
+Añade una lista de ítems asociados a la tienda.
+
+```
+fields.List(fields.Nested(lambda: ItemSchema()), dump_only=True)
+```
+
+- fields.List(...): representa una lista.
+
+- fields.Nested(...): representa un objeto anidado (otro esquema).
+
+- lambda: ItemSchema(): usa una función anónima para evitar errores de referencia circular (porque ItemSchema también hace referencia a StoreSchema).
+
+- dump_only=True: los items se devuelven en respuestas, pero no se pueden enviar en peticiones.
+
+4. ItemSchema
+
+```
+class ItemSchema(PlainItemSchema):
+    store_id = fields.Int(required=True, load_only=True)
+    store = fields.Nested(lambda: StoreSchema(), dump_only=True)
+```
+
+¿Qué hace?
+
+Hereda id, name y price desde PlainItemSchema.
+
+Añade:
+
+a) store_id
+
+```
+store_id = fields.Int(required=True, load_only=True)
+```
+
+El ID de la tienda a la que pertenece el ítem.
+
+- load_only=True: se usa solo al recibir datos (no se incluye en la respuesta).
+
+- required=True: obligatorio al crear un ítem.
+
+b) store
+
+```
+store = fields.Nested(lambda: StoreSchema(), dump_only=True)
+Relación inversa: al devolver un ítem, incluye la tienda a la que pertenece.
+
+dump_only=True: solo se usa al devolver datos, no al recibirlos.
+```
+
+![image](./img/195.png)
+
+Nota: para evitar el tema de recursividad y problemas, los esquemas se modifican:
+
+![image](./img/214.png)
+
+
 ### Cómo configurar Flask-SQLAlchemy con tu aplicación Flask
 
+```
+import os
+
+from flask import Flask
+
+from flask_smorest import Api
+
+from db import db
+import models
+
+from resources.item import blp as ItemBlueprint
+from resources.store import blp as StoreBlueprint
+
+
+def create_app(db_url=None):
+    app = Flask(__name__)
+
+    app.config["API_TITLE"] = "Stores REST API"
+    app.config["API_VERSION"] = "v1"
+    app.config["OPENAPI_VERSION"] = "3.0.3"
+    app.config["OPENAPI_URL_PREFIX"] = "/"
+    app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
+    app.config["OPENAPI_SWAGGER_UI_URL"] = (
+        "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv(
+        "DATABASE_URL", "sqlite:///" + os.path.abspath("data.db")
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+
+    db.init_app(app)
+    api = Api(app)
+
+    with app.app_context():
+        db.create_all()
+        print("✅ Base de datos creada (o ya existente)")
+
+    api.register_blueprint(ItemBlueprint)
+    api.register_blueprint(StoreBlueprint)
+
+    return app
+```
+
+La base de datos se crea al ejecutar:
+
+```
+flask run
+```
+
+![image](./img/196.png)
 
 
 ### Cómo insertar datos en una tabla con SQLAlchemy
 
+Se modifican los métodos post:
+
+1. Item
+
+```
+@blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
+    def post(self, item_data):
+        item = ItemModel(**item_data)
+
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message="An error ocurred while inserting the item.")
+
+        return item
+```
+
+![image](./img/197.png)
+
+2. Store
+
+```
+@blp.response(201, StoreSchema)
+    def post(self, store_data):
+        store = StoreModel(**store_data)
+
+        try:
+            db.session.add(store)
+            db.session.commit()
+
+        except IntegrityError:
+            abort(400, message="A store with that name alredy exists.")
+
+        except SQLAlchemyError:
+            abort(500, message="An error ocurred while inserting the store.")
+
+        return store
+```
+
+![image](./img/198.png)
+
+Manejo de errores con try/except
+
+🧱 db.session.add(store) y db.session.commit()
+Se añade el objeto a la sesión de SQLAlchemy y se guarda (commit) en la base de datos.
+
+❌ except IntegrityError:
+
+Se lanza si la tienda ya existe y hay una restricción de unicidad (unique=True).
+
+Devuelve 400 Bad Request con un mensaje claro.
+
+⚠️ except SQLAlchemyError:
+
+Se captura cualquier otro error de la base de datos (fallo en el disco, error de conexión, etc.).
+
+Devuelve 500 Internal Server Error.
 
 
 ### Cómo encontrar modelos en la base de datos por ID o devolver un
 
+Se modifican los métodos get:
+
+1. Item
+
+```
+@blp.response(200, ItemSchema)
+    def get(self, item_id):
+        item = ItemModel.query.get_or_404(item_id)
+        return item
+```
+
+![image](./img/199.png)
+
+2. Store
+
+```
+@blp.response(200, StoreSchema)
+    def get(self, store_id):
+        store = StoreModel.query.get_or_404(store_id)
+        return store
+```
+
+store = StoreModel.query.get_or_404(store_id)
+
+Busca una tienda con el ID especificado.
+Devuelve el objeto si lo encuentra o lanza un error 404 automáticamente si no existe.
+
+![image](./img/200.png)
 
 
 ### Cómo actualizar modelos con SQLAlchemy
 
+Se modifican los métodos put:
+
+1. Item
+
+```
+@blp.arguments(ItemUpdateSchema)
+    @blp.response(200, ItemSchema)
+    def put(self, item_data, item_id):
+        item = ItemModel.query.get(item_id)
+
+        if item:
+            item.price = item_data["price"]
+            item.name = item_data["name"]
+        else:
+            item = ItemModel(id=item_id, **item_data)
+
+        db.session.add(item)
+        db.session.commit()
+
+        return item
+```
+
+![image](./img/201.png)
+
+2. Store
+
+```
+@blp.arguments(StoreUpdateSchema)
+    @blp.response(200, StoreSchema)
+    def put(self, store_data, store_id):
+        store = StoreModel.query.get(store_id)
+
+        if store:
+            store.name = store_data["name"]
+        else:
+            store = StoreModel(id=store_id, **store_data)
+
+        db.session.add(store)
+        db.session.commit()
+
+        return store
+```
+
+![image](./img/202.png)
 
 
 ### Cómo obtener la lista de todos los modelos
 
+Se modifican los métodos get all:
+
+1. Item
+
+```
+@blp.response(200, ItemSchema(many=True))
+    def get(self):
+        return ItemModel.query.all()
+```
+
+![image](./img/203.png)
+
+2. Store
+
+```
+@blp.response(200, StoreSchema(many=True))
+    def get(self):
+        return StoreModel.query.all()
+```
+
+![image](./img/204.png)
 
 
 ### Cómo eliminar modelos con SQLAlchemy
 
+Se modifican los métodos delete:
+
+1. Item
+
+```
+def delete(self, item_id):
+        item = ItemModel.query.get_or_404(item_id)
+        db.session.delete(item)
+        db.session.commit()
+        return {"message": "Item deleted."}
+```
+
+![image](./img/205.png)
+
+2. Store
+
+```
+def delete(self, store_id):
+        store = StoreModel.query.get_or_404(store_id)
+        db.session.delete(store)
+        db.session.commit()
+        return {"message": "Item deleted."}
+```
+
+![image](./img/206.png)
+
+No hay que retornar 200, ya por defecto lo envía.
 
 
 ### Eliminar modelos relacionados con cascadas
 
+Si se eliminan una tienda también deben ser eliminados los datos de item relacionadas a la tienda, para ello se usa eliminación por cascada:
+
+```
+from db import db
+
+
+class StoreModel(db.Model):
+    __tablename__ = "stores"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    items = db.relationship(
+        "ItemModel",
+        back_populates="store",
+        lazy="dynamic",
+        cascade="all, delete",
+    )
+```
+
+![image](./img/207.png)
 
 
 ### Conclusión de esta sección
+
+Probar en Postman que funciona todo:
+
+1. Store
+
+Se crea la tienda:
+
+![image](./img/208.png)
+
+Se listan todas las tiendas:
+
+![image](./img/209.png)
+
+Se lista esa tienda en específico:
+
+![image](./img/210.png)
+
+Se modifica la tienda:
+
+![image](./img/211.png)
+
+Se elimina la tienda:
+
+![image](./img/212.png)
+
+1. Item
+
+Se crea el producto:
+
+![image](./img/215.png)
+
+Se listan todos los productos:
+
+![image](./img/216.png)
+
+Se lista el producto en específico:
+
+![image](./img/217.png)
+
+Se modifica el producto:
+
+![image](./img/218.png)
+
+Se elimina el producto:
+
+![image](./img/219.png)
 
 
 ---
