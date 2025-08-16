@@ -387,7 +387,7 @@ Este comando sirve para ejecutar un contenedor Docker en segundo plano, basado e
 
 ```
 sudo docker run -d -p 5005:5000 rest-apis-flask-python
-    sudo docker container ls
+sudo docker container ls
 ```
 
 ![image](./img/130.png)
@@ -861,6 +861,7 @@ El volúmen monta tu directorio actual del host (tu máquina) en el contenedor, 
 Este es el "working directory" (directorio de trabajo) dentro del contenedor. "Cuando entres al contenedor o ejecutes comandos, empieza desde /app."
 
 ```
+sudo docker build -t simple-flask-api ./
 sudo docker run -dp 5005:5000 -w /app -v "$(pwd):/app" simple-flask-api
 ```
 
@@ -1987,37 +1988,252 @@ Prueba en Postman:
 - Proteger los endpoints solicitando un JWT
 - Reclamos y autorización de JWT
 - Cómo añadir el cierre de sesión a la API REST
-- Encadenamiento de solicitudes con Insomnia
+- Encadenamiento de solicitudes con Postman
 - Actualización de tokens con Flask-JWT-Extended
 
 ### ¿Quién usa JWT?
 
+![image](./img/247.png)
+
+![image](./img/248.png)
+
+![image](./img/249.png)
+
+![image](./img/250.png)
+
+![image](./img/251.png)
+
+![image](./img/252.png)
+
+![image](./img/253.png)
+
 
 ### Cómo configurar Flask-JWT-Extended con nuestra app
+
+JWT (JSON Web Token) es un estándar abierto (RFC 7519) que define un formato compacto y seguro para transmitir información entre partes como un objeto JSON. Se utiliza comúnmente en sistemas de autenticación y autorización.
+
+🔐 ¿Para qué se usa JWT?
+
+Principalmente en:
+
+- Autenticación: Permite verificar la identidad del usuario.
+
+- Autorización: Controla el acceso a recursos según los permisos definidos en el token.
+
+Ventajas de JWT
+
+- Autocontenidos: No requieren una base de datos para verificar autenticidad.
+
+- Escalables: Muy útiles para APIs REST y sistemas distribuidos.
+
+- Estándar y compatible con múltiples lenguajes.
+
+⚠️ Consideraciones de seguridad
+
+- Nunca pongas información sensible en el payload (está codificado en Base64, no cifrado).
+
+- Usa HTTPS siempre.
+
+- Define una expiración (exp) adecuada.
+
+- Elige algoritmos de firma seguros (evita none o algoritmos débiles).
 
 
 ### Codificación del modelo y esquema de usuario
 
+Flask-JWT-Extended es una extensión de Flask que facilita la implementación de autenticación y autorización basada en JWT (JSON Web Tokens) en aplicaciones web desarrolladas con Flask.
+
+Es una herramienta popular para proteger rutas y recursos en una API, permitiendo el uso de access tokens, refresh tokens, y varias funciones útiles como manejo de roles, tokens personalizados, y más.
+
+🧩 ¿Qué ofrece Flask-JWT-Extended?
+
+- Generar y devolver access tokens y refresh tokens.
+
+- Proteger rutas con decoradores como @jwt_required.
+
+- Almacenar datos personalizados dentro del token (claims).
+
+- Soporte para token refreshing (renovación de token).
+
+- Manejo de usuarios bloqueados o revocados.
+
+- Callbacks para manejar errores personalizados (por ejemplo, token expirado).
+
+Instalar Flask-JWT-Extended: 
+
+```
+pip install -r requirements.txt
+```
+
+![image](./img/257.png)
+
+En app.py:
+
+![image](./img/254.png)
+
+![image](./img/259.png)
+
+![image](./img/255.png)
+
+![image](./img/256.png)
+
+```
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(required=True)
+    password = fields.Str(required=True, load_only=True)
+```
+
+1. id = fields.Int(dump_only=True)
+
+- Tipo: Int (entero)
+
+- dump_only=True:
+
+Este campo solo se usará al serializar (cuando mandas los datos al cliente, como respuesta).
+
+No se espera que venga del cliente (por ejemplo, en un POST o PUT).
+
+2. password = fields.Str(required=True, load_only=True)
+
+- Tipo: Str
+
+- required=True:
+
+El cliente debe incluirlo en el JSON de entrada.
+
+- load_only=True:
+
+Este campo solo se usará al deserializar (leer datos que vienen del cliente).
+
+No se incluirá en la salida cuando se genere JSON para el cliente.
+
+🔐 Es una medida de seguridad para que las contraseñas no se expongan al devolver datos de usuario.
+
+![image](./img/258.png)
+
 
 ### Cómo añadir un endpoint de registro a la API REST
+
+![image](./img/260.png)
+
+![image](./img/261.png)
+
+![image](./img/262.png)
+
+Por las nuevas instalaciones hay que volver a recontruir la imagen, ejecutar el contenedor y actualizar la base de datos:
+
+![image](./img/263.png)
+
+![image](./img/264.png)
+
+```
+sudo rm data.db
+flask run
+sudo docker build -t simple-flask-api ./
+sudo docker run -dp 5005:5000 -w /app -v "$(pwd):/app" simple-flask-api
+```
+
+Probar user en postman:
+
+![image](./img/265.png)
+
+![image](./img/266.png)
+
+![image](./img/267.png)
 
 
 ### Cómo añadir un endpoint de inicio de sesión a la API REST
 
+![image](./img/268.png)
+
+![image](./img/269.png)
+
 
 ### Proteger los endpoints solicitando un JWT
+
+![image](./img/270.png)
+
+![image](./img/271.png)
+
+![image](./img/272.png)
+
+![image](./img/273.png)
 
 
 ### Reclamos y autorización de JWT
 
+![image](./img/274.png)
+
+![image](./img/275.png)
+
+Para borrar items, lo puede hacer solo el usuario 1, que es el admin:
+
+![image](./img/276.png)
+
+![image](./img/277.png)
+
+![image](./img/278.png)
+
+![image](./img/279.png)
+
 
 ### Cómo añadir el cierre de sesión a la API REST
 
+![image](./img/280.png)
 
-### Encadenamiento de solicitudes con Insomnia
+![image](./img/281.png)
+
+![image](./img/282.png)
+
+![image](./img/283.png)
+
+![image](./img/284.png)
+
+![image](./img/285.png)
+
+Se revoca el token:
+
+![image](./img/286.png)
+
+![image](./img/287.png)
+
+![image](./img/288.png)
+
+
+### Encadenamiento de solicitudes con Postman
+
+```
+let response = pm.response.json();
+pm.environment.set("access_token", response.access_token);
+```
+
+![image](./img/289.png)
+
+![image](./img/290.png)
+
+![image](./img/291.png)
 
 
 ### Actualización de tokens con Flask-JWT-Extended
+
+Para refrescar los tokens:
+
+![image](./img/292.png)
+
+![image](./img/293.png)
+
+![image](./img/294.png)
+
+![image](./img/295.png)
+
+Como se puede observar no genera otro refresh token:
+
+![image](./img/296.png)
+
+![image](./img/297.png)
+
+![image](./img/298.png)
 
 
 ---
