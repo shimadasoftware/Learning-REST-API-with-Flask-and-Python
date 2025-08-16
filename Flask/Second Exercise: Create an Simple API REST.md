@@ -2248,14 +2248,141 @@ Como se puede observar no genera otro refresh token:
 
 ### Cómo añadir Flask-Migrate a nuestra aplicación Flask
 
+flask-migrate es una extensión de Flask que automatiza la gestión de cambios en la base de datos usando migraciones, a través de Alembic (una herramienta de migración de bases de datos para SQLAlchemy).
+
+¿Para qué sirve flask-migrate?
+
+Te permite hacer cosas como:
+
+- Crear la base de datos desde tus modelos de SQLAlchemy.
+
+- Aplicar cambios en los modelos sin perder datos existentes.
+
+- Versionar el esquema de tu base de datos.
+
+- Mantener sincronizadas tus clases de Python con la estructura real de la DB.
+
+🛠️ ¿Qué problema resuelve?
+
+Sin flask-migrate, cuando cambias tus modelos (por ejemplo, agregas un campo), tendrías que:
+
+- Borrar la base de datos.
+
+- Volver a crearla con db.create_all().
+
+- Perder todos los datos anteriores.
+
+- Con flask-migrate, puedes hacer un cambio controlado y reversible sin borrar nada.
+
+⚙️ ¿Cómo funciona?
+
+Internamente usa Alembic, y se integra con Flask-SQLAlchemy. Funciona en 3 pasos:
+
+```
+flask db init
+```
+
+Inicializa la carpeta de migraciones (solo una vez).
+
+```
+flask db migrate -m "mensaje"
+```
+
+Detecta cambios en los modelos y crea un script de migración.
+
+```
+flask db upgrade
+```
+
+Aplica esos cambios a la base de datos real.
+
+⚙️ Alembiv
+
+Alembic es una herramienta de migraciones de bases de datos para proyectos que usan SQLAlchemy (el ORM de Python). Fue creada por el mismo autor de SQLAlchemy.
+
+¿Para qué sirve Alembic?
+
+Cuando cambias los modelos de tu base de datos (por ejemplo, agregas una columna, renombrás una tabla, cambias tipos de datos...), Alembic te permite aplicar esos cambios a la base de datos real de forma estructurada y segura, sin perder los datos existentes.
+
+¿Qué hace Alembic?
+
+- Detecta los cambios en tus modelos de SQLAlchemy.
+
+- Genera scripts de migración que describen cómo modificar la base de datos (agregar columnas, eliminar tablas, etc.).
+
+- Ejecuta esos scripts en la base de datos para mantenerla sincronizada con tus modelos.
+
+- Permite revertir migraciones si te equivocas.
+
+```
+pip install flask-migrate
+```
+
+![image](./img/299.png)
+
+![image](./img/300.png)
+
 
 ###  Inicializa tu base de datos con Flask-Migrate
+
+Para inicializa la base de datos: 
+
+```
+flask db init
+```
+
+Para generar la primera migración, primero hay que borrar la base de datos actual:
+
+```
+sudo rm data.db
+flask db migrate
+```
+
+![image](./img/301.png)
+
+![image](./img/302.png)
+
+![image](./img/303.png)
+
+Upgrade permite ir a la versión actual y downgrade a la anterior versión.
+
+Para crear las tablas en la base de datos:
+
+```
+flask db upgrade
+```
 
 
 ###  Modifica los modelos de SQLAlchemy y genera una migración
 
+```
+flask db migrate
+flask db migrateflask db upgrade
+```
+
+Se adiciona una columna en la tabla de items:
+
+![image](./img/304.png)
+
+![image](./img/305.png)
+
+![image](./img/306.png)
+
+Nota si llega a fallar el migrate, se puede borrar el archivo de la versión generada y luego volver a ejecutar:
+
+```
+flask db migrate
+flask db migrateflask db upgrade
+```
+
 
 ### Revisa y modifica manualmente las migraciones de bases de datos
+
+![image](./img/307.png)
+
+![image](./img/308.png)
+
+![image](./img/309.png)
 
 
 ---
