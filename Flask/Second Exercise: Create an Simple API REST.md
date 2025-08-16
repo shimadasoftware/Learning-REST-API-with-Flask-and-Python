@@ -2400,29 +2400,107 @@ flask db migrateflask db upgrade
 
 ### ¿Qué son los repositorios y las confirmaciones de Git?
 
+![image](./img/310.png)
+
+![image](./img/311.png)
+
+![image](./img/312.png)
 
 
 ### Inicializamos un repositorio Git para nuestro proyecto
 
+```
+git init
+git status
+```
+
+![image](./img/313.png)
+
+Del proyecto hya archivos que no se deben compartir como:
+
+- .venv
+- data.db
+- __pycache__
+
+Para eso está el archivo: .gitignore
+
+```
+.venv
+.vscode
+data.db
+__pycache__
+*pyc
+.DS_Store
+```
+
+Para adicionar los archivos al Staging Area:
+
+```
+git add .
+```
+
+![image](./img/314.png)
+
+Para regresar del Staging Area al Working Area:
+
+![image](./img/315.png)
+
+![image](./img/316.png)
+
+![image](./img/317.png)
 
 
 ### Escribiendo documentos y confirmaciones en Markdown
 
+![image](./img/318.png)
+
+![image](./img/319.png)
+
+![image](./img/320.png)
+
+![image](./img/321.png)
 
 
 ### Repositorios remotos y cómo usarlos
 
-
+```
+git add remote add origin url
+git push --set-upstream origin main
+```
 
 ### Ramas de Git y merging
 
+![image](./img/322.png)
+
+![image](./img/323.png)
+
+![image](./img/324.png)
 
 
 ### Conflictos de merging y cómo resolverlos
 
+![image](./img/325.png)
+
+![image](./img/326.png)
+
+![image](./img/327.png)
+
+![image](./img/328.png)
+
+![image](./img/329.png)
+
+![image](./img/330.png)
+
+![image](./img/331.png)
+
+![image](./img/332.png)
+
+![image](./img/333.png)
 
 
 ### Resumen de los capítulos finales del ebook
+
+![image](./img/334.png)
 
 
 ---
