@@ -443,6 +443,80 @@ sudo docker run hello-world
 
 ![image](./img/5%20probar%20docker.png)
 
+Nota: el cliente de Docker (docker) usa un socket diferente para conectarse al daemon.
+
+Por defecto, docker busca el daemon en:
+
+```
+~/.docker/desktop/docker.sock
+```
+(que es el socket de Docker Desktop, que ya no tienes).
+
+Al hacer export DOCKER_HOST=unix:///run/docker.sock le estás diciendo:
+
+“Oye Docker, usa el daemon que corre en /run/docker.sock”
+que es el socket del Docker Engine tradicional del sistema.
+
+Para configurarlo abrir:
+
+```
+nano ~/.bashrc
+```
+
+Adicionar al archivo:
+
+```
+export DOCKER_HOST=unix:///run/docker.sock
+```
+
+Aplica los cambios sin reiniciar la sesión:
+
+```
+source ~/.bashrc
+```
+
+![image](./img/181.png)
+
+Docker Desktop en Linux
+
+Docker Desktop en Linux no instala el daemon tradicional del sistema (/run/docker.sock).
+
+En cambio, crea su propio socket privado dentro de tu home, generalmente:
+
+```
+~/.docker/desktop/docker.sock
+```
+
+Ese socket solo puede ser usado por el usuario que arrancó Docker Desktop.
+
+Por eso, cuando ejecutabas docker info sin sudo, tu cliente intentaba usar ese socket pero no estaba activo o no tenía permisos → fallaba.
+
+Diferencia con Docker Engine nativo
+
+Docker Engine nativo en Linux crea su socket en:
+
+```
+/run/docker.sock
+```
+
+Ese socket puede ser compartido con cualquier usuario que esté en el grupo docker → no hace falta sudo.
+
+Por eso, cuando cambiaste DOCKER_HOST=unix:///run/docker.sock, tu cliente pudo conectarse al daemon sin problemas.
+
+| Caso                 | Socket                          | Acceso sin sudo                              |
+| -------------------- | ------------------------------- | -------------------------------------------- |
+| Docker Desktop Linux | `~/.docker/desktop/docker.sock` | No, falla si no es el usuario que lo arrancó |
+| Docker Engine nativo | `/run/docker.sock`              | Sí, si el usuario está en el grupo `docker`  |
+
+Añadir docker como usuario:
+
+```
+sudo usermod -aG docker $USER
+groups
+```
+
+Luego, reiniciar el computador.
+
 
 ### 2. Instalar Docker Desktop
 
